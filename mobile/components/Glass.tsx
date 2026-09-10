@@ -5,39 +5,46 @@ import {
   isLiquidGlassAvailable,
 } from "expo-glass-effect";
 import type { ReactNode } from "react";
-import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import {
+  Platform,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 import { color, radius } from "../lib/theme";
 
 /**
- * One glass surface, three tiers.
+ * One glass surface, two real tiers.
  *
- * `expo-glass-effect` renders real UIVisualEffectView liquid glass, but only on
- * iOS 26+. Everywhere else it silently falls back to a plain `View` — which
- * would leave the app looking flat and unfinished rather than deliberately
- * different. So the fallback is designed here, once, and every screen just asks
- * for `<Glass>`:
+ * `expo-glass-effect` renders true UIVisualEffectView liquid glass, but only on
+ * iOS 26+. Everywhere else it falls back to a plain `View` — which would leave
+ * the app looking flat rather than deliberately different. So the fallback is
+ * designed here, once, and every screen just asks for `<Glass>`:
  *
- *   iOS 26+     real liquid glass, interactive on controls
- *   older iOS   a blur, tinted, with a bright top edge to catch light
- *   Android     a solid lifted surface — blur is expensive and inconsistent
- *               there, and a bad blur reads worse than an honest surface
+ *   iOS 26+                real liquid glass, interactive on controls
+ *   older iOS / Android    a real blur, tinted, with a lit top edge
  *
- * Two hard constraints, both from the platform rather than taste:
+ * Android needs `blurMethod` explicitly: it defaults to `'none'`, which renders
+ * a flat semi-transparent view and no blur at all. `dimezisBlurViewSdk31Plus`
+ * uses the efficient RenderNode API on Android 12+ and degrades to that
+ * semi-transparent view on older devices — which is why the tint underneath is
+ * chosen to look intentional on its own rather than to rely on the blur.
+ *
+ * Two platform constraints, both from the API rather than taste:
  *
  * 1. Setting `opacity: 0` on a GlassView *or any parent* stops the effect
- *    rendering at all. Never fade this component. If something must appear or
- *    disappear, mount and unmount it, or animate a child.
- * 2. Never animate blur intensity — on Android it re-renders the blur every
+ *    rendering at all. Never fade this component — mount and unmount it, or
+ *    animate a child.
+ * 2. Never animate blur intensity. On Android it re-renders the blur every
  *    frame. Cross-fade a static layer instead.
  */
 
-/** Resolved once: these cannot change while the app is running. */
-export const GLASS_TIER: "liquid" | "blur" | "solid" =
-  Platform.OS === "ios"
-    ? isLiquidGlassAvailable() && isGlassEffectAPIAvailable()
-      ? "liquid"
-      : "blur"
-    : "solid";
+/** Resolved once: this cannot change while the app is running. */
+export const GLASS_TIER: "liquid" | "blur" =
+  Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable()
+    ? "liquid"
+    : "blur";
 
 export const hasLiquidGlass = GLASS_TIER === "liquid";
 
@@ -75,31 +82,30 @@ export default function Glass({
     );
   }
 
-  if (GLASS_TIER === "blur") {
-    return (
-      <View style={[shape, style]}>
-        <BlurView
-          intensity={variant === "clear" ? 24 : 44}
-          tint="dark"
-          style={StyleSheet.absoluteFill}
-        />
-        {/* A bright top edge is what makes a material look lit rather than
-            like a grey rectangle. Real glass gets this for free. */}
-        <View style={[StyleSheet.absoluteFill, styles.edge, { borderRadius: rounded }]} />
-        {children}
-      </View>
-    );
-  }
+  const clear = variant === "clear";
 
   return (
-    <View
-      style={[
-        shape,
-        styles.solid,
-        variant === "clear" && styles.solidClear,
-        style,
-      ]}
-    >
+    <View style={[shape, style]}>
+      <BlurView
+        intensity={clear ? 28 : 48}
+        tint="dark"
+        // Android renders no blur at all without this.
+        blurMethod="dimezisBlurViewSdk31Plus"
+        style={StyleSheet.absoluteFill}
+      />
+      {/* The tint has to carry the surface on its own wherever the blur
+          degrades, so it is a real colour rather than a wash over the blur. */}
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: tint ?? (clear ? "rgba(12,12,14,0.42)" : "rgba(22,22,24,0.55)") },
+        ]}
+      />
+      {/* A bright top edge is what makes a material look lit rather than like
+          a grey rectangle. Real glass gets this for free. */}
+      <View
+        style={[StyleSheet.absoluteFill, styles.edge, { borderRadius: rounded }]}
+      />
       {children}
     </View>
   );
@@ -108,16 +114,7 @@ export default function Glass({
 const styles = StyleSheet.create({
   edge: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.14)",
-    borderTopColor: "rgba(255,255,255,0.24)",
-  },
-  solid: {
-    backgroundColor: color.raise,
-    borderWidth: StyleSheet.hairlineWidth,
     borderColor: color.line,
-  },
-  solidClear: {
-    // Over footage, an opaque panel would hide the thing being described.
-    backgroundColor: "rgba(22,22,24,0.82)",
+    borderTopColor: "rgba(255,255,255,0.22)",
   },
 });
