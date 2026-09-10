@@ -1,0 +1,49 @@
+# EAS Build archive exclusions.
+#
+# Why this file exists: the first build uploaded 102 MB. Every tracked file in
+# the entire repository totals 1.5 MB. The only thing on disk large enough to
+# account for the difference is mobile/node_modules (383 MB, which gzips to
+# roughly 100 MB) — so it went into the archive despite being gitignored.
+#
+# EAS installs dependencies on the worker itself, so shipping node_modules is
+# pure waste: it is compressed, uploaded, and then thrown away. Worse, these
+# are Windows-resolved packages with Windows-specific optional binaries, which
+# have no business on a Linux builder.
+#
+# IMPORTANT: when .easignore is present, EAS uses it INSTEAD of .gitignore, not
+# in addition to it. So this file must be complete on its own — anything left
+# out here gets uploaded, even if .gitignore excludes it.
+
+# Dependencies — reinstalled on the worker
+node_modules/
+
+# Expo local state and build output
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+
+# Generated native projects — EAS runs prebuild itself
+/android
+/ios
+.kotlin/
+*.orig.*
+
+# Signing material must never leave this machine
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# Local env
+.env*.local
+
+# Logs and caches
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.tsbuildinfo
+.DS_Store
