@@ -34,3 +34,6 @@ venv/
 
 # Personal working document — kept locally, never published.
 PROJECT_DECISION_LOG.md
+
+# graphify code graph — generated, regenerate with: graphify update .
+graphify-out/
