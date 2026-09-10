@@ -80,34 +80,38 @@ Reference: **Apple TV**. Not its content, its posture.
    space, few rules. Tracking is size-specific — negative on display, near zero
    on body, slightly positive on the smallest labels.
 
-### Liquid Glass, and the honest part
+### Liquid Glass, on both platforms
 
-`expo-glass-effect` renders real `UIVisualEffectView` glass — but **iOS 26+
-only**. On older iOS and on every Android device it falls back to a plain `View`,
-which would leave the app looking flat and unfinished rather than deliberately
-different.
+`expo-glass-effect` is genuinely Apple's Liquid Glass, but its module config is
+`platforms: ["apple"]` with an empty `android` block — on Android it renders a
+plain `View` and nothing else. That makes it an iOS-only effect, and this app is
+used on Android.
 
-So glass is a three-tier primitive, decided once in `components/Glass.tsx`:
+`react-native-liquid-glassmorphism` is the one that isn't an iOS wrapper. Apple's
+native `UIGlassEffect` on iOS 26; a real AGSL `RuntimeShader` on Android — blur,
+then vibrancy, then edge refraction, then tint and specular — with its own tiers
+beneath:
 
-| Platform | Surface |
+| Platform | Renders |
 |---|---|
-| iOS 26+ | `GlassView` — real liquid glass, `isInteractive` on controls |
-| Older iOS | `BlurView` — a blur, tinted, with a bright top edge |
-| Android | Solid elevated surface, one step lighter than the background |
+| iOS 26+ | Native Liquid Glass |
+| iOS 15–25 | Blur fallback |
+| Android 33+ | The full lens, refraction included |
+| Android 31–32 | Blur, tint and specular — no refraction |
+| Android < 31 | Translucent tint and rim only |
 
-Every tier is designed, none is a degradation the user can feel as a bug.
+**The cost is that it is a native module: it does not run in Expo Go.** The app
+needs a development build, or `expo prebuild` and a local Android build.
 
-**Two hard constraints from the API:**
+Values stay restrained. The library will happily render a heavy lens with film
+grain and gyro-driven specular; a video editor is not the place for it. Edge
+refraction is what makes a surface read as glass rather than as frosting, but
+past roughly `thickness: 1.2` it reads as a fisheye lens instead of a pane. Grain
+off, tilt off.
 
-- Setting `opacity: 0` on a `GlassView` *or any parent* stops the effect
-  rendering at all. Fades must use `glassEffectStyle`'s own `animate` /
-  `animationDuration`, never opacity.
-- Never animate blur intensity. On Android it re-renders the blur every frame.
-  Cross-fade a static layer instead.
-
-Where several glass controls sit together, `GlassContainer` with a `spacing`
-lets them merge as they approach — the behaviour that makes the material read as
-liquid rather than as frosted rectangles.
+Where several glass controls sit together, `LiquidGlassContainer` with a
+`spacing` lets them merge as they approach — the behaviour that makes the
+material read as liquid rather than as separate frosted rectangles.
 
 ## Motion
 

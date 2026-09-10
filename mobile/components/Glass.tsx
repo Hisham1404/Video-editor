@@ -1,59 +1,44 @@
-import { BlurView } from "expo-blur";
-import {
-  GlassView,
-  isGlassEffectAPIAvailable,
-  isLiquidGlassAvailable,
-} from "expo-glass-effect";
 import type { ReactNode } from "react";
+import { Platform, type StyleProp, type ViewStyle } from "react-native";
 import {
-  Platform,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native";
-import { color, radius } from "../lib/theme";
+  LiquidGlassContainer,
+  LiquidGlassView,
+} from "react-native-liquid-glassmorphism";
+import { radius } from "../lib/theme";
 
 /**
- * One glass surface, two real tiers.
+ * One glass surface, everywhere.
  *
- * `expo-glass-effect` renders true UIVisualEffectView liquid glass, but only on
- * iOS 26+. Everywhere else it falls back to a plain `View` — which would leave
- * the app looking flat rather than deliberately different. So the fallback is
- * designed here, once, and every screen just asks for `<Glass>`:
+ * The first version used `expo-glass-effect`, which is genuinely Liquid Glass —
+ * but its module config is `platforms: ["apple"]` with an empty `android` block,
+ * so on Android it renders a plain View and nothing else. That is an iOS-only
+ * effect, and this app is being used on Android.
  *
- *   iOS 26+                real liquid glass, interactive on controls
- *   older iOS / Android    a real blur, tinted, with a lit top edge
+ * `react-native-liquid-glassmorphism` is the one that isn't an iOS wrapper: it
+ * uses Apple's native UIGlassEffect on iOS 26, and a real AGSL RuntimeShader on
+ * Android — blur, then vibrancy, then edge refraction, then tint and specular —
+ * with its own degradation tiers underneath:
  *
- * Android needs `blurMethod` explicitly: it defaults to `'none'`, which renders
- * a flat semi-transparent view and no blur at all. `dimezisBlurViewSdk31Plus`
- * uses the efficient RenderNode API on Android 12+ and degrades to that
- * semi-transparent view on older devices — which is why the tint underneath is
- * chosen to look intentional on its own rather than to rely on the blur.
+ *   Android 33+   the full lens, refraction included
+ *   Android 31-32 blur plus tint and specular, no refraction
+ *   Android < 31  translucent tint and rim only
+ *   iOS 26+       native Liquid Glass
+ *   iOS 15-25     blur fallback
  *
- * Two platform constraints, both from the API rather than taste:
+ * The cost is that it is a native module: it does **not** run in Expo Go. The
+ * app needs a development build or `expo prebuild`.
  *
- * 1. Setting `opacity: 0` on a GlassView *or any parent* stops the effect
- *    rendering at all. Never fade this component — mount and unmount it, or
- *    animate a child.
- * 2. Never animate blur intensity. On Android it re-renders the blur every
- *    frame. Cross-fade a static layer instead.
+ * Values here are deliberately restrained. The library will happily render a
+ * heavy lens with grain and gyro tilt; a video editor is not the place for it.
+ * Refraction stays subtle, thickness near default, grain off.
  */
-
-/** Resolved once: this cannot change while the app is running. */
-export const GLASS_TIER: "liquid" | "blur" =
-  Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable()
-    ? "liquid"
-    : "blur";
-
-export const hasLiquidGlass = GLASS_TIER === "liquid";
 
 interface Props {
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
-  /** `clear` for chrome over footage, `regular` for a surface carrying text. */
+  /** `clear` for chrome laid over footage, `regular` for a surface with text. */
   variant?: "clear" | "regular";
-  /** Adds the platform's own press response. Controls only, never containers. */
+  /** The platform's own press response. Controls only, never containers. */
   interactive?: boolean;
   tint?: string;
   rounded?: number;
@@ -67,54 +52,54 @@ export default function Glass({
   tint,
   rounded = radius.lg,
 }: Props) {
-  const shape: ViewStyle = { borderRadius: rounded, overflow: "hidden" };
-
-  if (GLASS_TIER === "liquid") {
-    return (
-      <GlassView
-        style={[shape, style]}
-        glassEffectStyle={variant}
-        isInteractive={interactive}
-        tintColor={tint}
-      >
-        {children}
-      </GlassView>
-    );
-  }
-
   const clear = variant === "clear";
 
   return (
-    <View style={[shape, style]}>
-      <BlurView
-        intensity={clear ? 28 : 48}
-        tint="dark"
-        // Android renders no blur at all without this.
-        blurMethod="dimezisBlurViewSdk31Plus"
-        style={StyleSheet.absoluteFill}
-      />
-      {/* The tint has to carry the surface on its own wherever the blur
-          degrades, so it is a real colour rather than a wash over the blur. */}
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: tint ?? (clear ? "rgba(12,12,14,0.42)" : "rgba(22,22,24,0.55)") },
-        ]}
-      />
-      {/* A bright top edge is what makes a material look lit rather than like
-          a grey rectangle. Real glass gets this for free. */}
-      <View
-        style={[StyleSheet.absoluteFill, styles.edge, { borderRadius: rounded }]}
-      />
+    <LiquidGlassView
+      variant={variant}
+      // Chrome over footage stays light so the frame reads through it; a
+      // surface carrying text needs more separation to stay legible.
+      intensity={clear ? 45 : 70}
+      tintColor={tint ?? (clear ? "rgba(10,10,12,0.28)" : "rgba(22,22,24,0.42)")}
+      borderRadius={rounded}
+      interactive={interactive}
+      // Android-only lens controls. Edge lensing is what makes it read as
+      // glass rather than frosting, but past about 1.2 it starts to look like
+      // a fisheye lens instead of a pane.
+      refraction
+      thickness={clear ? 0.9 : 1.1}
+      edgeReflectionStrength={0.7}
+      grain={0}
+      // Gyro specular is a party trick on a screen you hold still to work on.
+      tilt={false}
+      style={style}
+    >
       {children}
-    </View>
+    </LiquidGlassView>
   );
 }
 
-const styles = StyleSheet.create({
-  edge: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: color.line,
-    borderTopColor: "rgba(255,255,255,0.22)",
-  },
-});
+/**
+ * Wraps sibling glass controls so they merge as they approach, which is the
+ * behaviour that makes the material read as liquid rather than as separate
+ * frosted rectangles.
+ */
+export function GlassGroup({
+  children,
+  spacing = 10,
+  style,
+}: {
+  children: ReactNode;
+  spacing?: number;
+  style?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <LiquidGlassContainer spacing={spacing} style={style}>
+      {children}
+    </LiquidGlassContainer>
+  );
+}
+
+/** True where the effect is a real lens rather than a translucent fallback. */
+export const hasRealGlass =
+  Platform.OS === "ios" || (Platform.OS === "android" && Platform.Version >= 31);
