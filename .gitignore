@@ -1,0 +1,36 @@
+# Secrets
+.env
+*.key
+
+# Data and outputs
+runs/
+media/
+*.mp4
+*.mov
+*.wav
+*.mp3
+evals/shotbench/results/
+evals/shotbench/shotbench_data/
+
+# Golden fixtures are append-only but their media is large; track with LFS or
+# keep out of git and document provenance in evals/golden/<name>/notes.md
+evals/golden/**/assets/
+evals/golden/**/*.mp4
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Locally installed agent skills (third-party, ~11MB). Tooling, not deliverable.
+.agents/
+.claude/
+
+# Original brief archives; contents are extracted as .md in the repo root.
+*.zip
+
+# Personal working document — kept locally, never published.
+PROJECT_DECISION_LOG.md

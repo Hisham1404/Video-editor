@@ -1,0 +1,21 @@
+# Pipeline runtime. Install torch first, matched to your CUDA version:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124
+
+# Stage 1 - shot segmentation
+scenedetect>=0.7.1
+opencv-python-headless>=4.10.0
+
+# Stage 2 - rhythm. NOT madmom: it requires Python <3.10 and will not install
+# on 3.12. beat_this is CPU-capable and measured 2.6x more accurate than
+# librosa, with downbeats librosa does not provide at all.
+beat-this>=0.1.0
+librosa>=1.0.0
+soundfile>=0.12.0
+
+# Stages 3, 5, 6 - vision and embeddings
+transformers>=4.57.0
+accelerate>=1.0.0
+pillow>=10.0.0
+
+# Tooling
+pytest>=8.0.0
