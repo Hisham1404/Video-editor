@@ -51,7 +51,7 @@ export default function ShotDetail({
              actually shows instead. */
           <div>
             <p className="eyebrow">The cut so far</p>
-            <p className="body mt-2 max-w-[52ch]">
+            <p className="body mx-auto mt-2 max-w-[52ch]">
               <span className="num">{matched}</span> shots came from your
               footage
               {gaps > 0 && (
@@ -79,7 +79,7 @@ function Body({ slot, bpm }: { slot: Slot; bpm: number }) {
 
   return (
     <>
-      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1">
         <span className="eyebrow">Shot {slot.index + 1}</span>
         {gap && (
           <span className="eyebrow" style={{ color: "var(--accent)" }}>
@@ -110,7 +110,7 @@ function Body({ slot, bpm }: { slot: Slot; bpm: number }) {
           >
             {slot.generation_prompt}
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
             <CopyButton text={slot.generation_prompt} />
             <label className="press hov rounded-full px-4 py-2 text-[13px] font-medium" style={{ border: "1px solid var(--line-2)" }}>
               <span className="cursor-pointer">Upload the clip</span>

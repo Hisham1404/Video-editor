@@ -27,12 +27,12 @@ export default function Shell({
     <div className="mx-auto w-full max-w-[900px] px-5 py-6 sm:px-8 sm:py-8">
       <nav
         aria-label="Progress"
-        className="mb-10 flex items-center justify-between gap-4 sm:mb-14"
+        className="relative mb-10 flex items-center justify-center sm:mb-14"
       >
         {back ? (
           <Link
             href={back}
-            className="press micro inline-flex items-center gap-1.5"
+            className="press micro absolute left-0 top-1/2 inline-flex -translate-y-1/2 items-center gap-1.5"
             style={{ color: "var(--ink-2)" }}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -47,7 +47,10 @@ export default function Shell({
             Back
           </Link>
         ) : (
-          <span className="micro" style={{ color: "var(--ink-3)" }}>
+          <span
+            className="micro absolute left-0 top-1/2 -translate-y-1/2"
+            style={{ color: "var(--ink-3)" }}
+          >
             Reel Editor
           </span>
         )}

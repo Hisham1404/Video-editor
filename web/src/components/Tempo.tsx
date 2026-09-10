@@ -80,8 +80,8 @@ export default function Tempo({ bpm, onChange, referenceBpm }: Props) {
 
   return (
     <section>
-      <div className="mb-4 flex items-end justify-between gap-6">
-        <div className="min-w-0">
+      <div className="mb-5 flex flex-col items-center gap-1">
+        <div>
           <h2 className="title">Your tempo</h2>
           <p className="caption mt-1">
             {referenceBpm
@@ -89,7 +89,7 @@ export default function Tempo({ bpm, onChange, referenceBpm }: Props) {
               : "The track you're cutting to"}
           </p>
         </div>
-        <div className="flex shrink-0 items-baseline gap-1.5">
+        <div className="mt-2 flex items-baseline justify-center gap-1.5">
           <NumberFlow
             value={bpm}
             className="num text-[2.5rem] font-semibold leading-none tracking-[-0.035em] sm:text-[3rem]"

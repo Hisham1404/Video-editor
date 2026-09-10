@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 const INPUTS = [
   {
@@ -34,13 +34,13 @@ export default function Setup({ onAnalyze }: { onAnalyze: () => void }) {
   const ready = INPUTS.every((i) => (counts[i.key] ?? 0) > 0);
 
   return (
-    <div className="mx-auto w-full max-w-[560px]">
+    <div className="mx-auto w-full max-w-[520px] text-center">
       <h1 className="display">
         Cut your footage
         <br />
         like the reel you admire.
       </h1>
-      <p className="caption mt-5 max-w-[42ch]">
+      <p className="caption mx-auto mt-5 max-w-[40ch]">
         Bring an edit you like, your own clips, and your own music. Where nothing
         of yours fits, you&apos;ll get a prompt to generate the missing shot.
       </p>
@@ -60,12 +60,12 @@ export default function Setup({ onAnalyze }: { onAnalyze: () => void }) {
         ))}
       </div>
 
-      <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-3">
+      <div className="mt-10 flex flex-col items-center gap-3">
         <button
           onClick={onAnalyze}
           disabled={!ready}
           className={clsx(
-            "press rounded-full px-6 py-3 text-[15px] font-medium",
+            "press rounded-full px-7 py-3 text-[15px] font-medium",
             "disabled:cursor-not-allowed",
           )}
           style={{
@@ -75,9 +75,7 @@ export default function Setup({ onAnalyze }: { onAnalyze: () => void }) {
         >
           Analyse the reference
         </button>
-        {!ready && (
-          <span className="caption">Add all three to continue</span>
-        )}
+        {!ready && <span className="caption">Add all three to continue</span>}
       </div>
     </div>
   );
@@ -100,19 +98,21 @@ function Row({
   count: number;
   onPick: (n: number) => void;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const filled = count > 0;
 
   return (
     <label
       className={clsx(
-        "press press-lg hov group flex cursor-pointer items-center gap-4 py-5",
+        "press press-lg hov flex cursor-pointer flex-col items-center gap-1 py-5",
         index > 0 && "rule",
       )}
-      style={{ marginInline: "-0.75rem", paddingInline: "0.75rem", borderRadius: 10 }}
+      style={{
+        marginInline: "-0.75rem",
+        paddingInline: "0.75rem",
+        borderRadius: 10,
+      }}
     >
       <input
-        ref={inputRef}
         type="file"
         accept={accept}
         multiple={multiple}
@@ -120,41 +120,36 @@ function Row({
         onChange={(e) => onPick(e.target.files?.length ?? 0)}
       />
 
-      {/* State is carried by one small mark rather than a badge, a border and
-          a colour all saying the same thing. */}
-      <span
-        aria-hidden
-        className="grid h-6 w-6 shrink-0 place-items-center rounded-full"
-        style={{
-          border: filled ? "none" : "1px solid var(--line-2)",
-          background: filled ? "var(--ink)" : "transparent",
-          transition: "background-color var(--t-fast) var(--ease-out)",
-        }}
-      >
-        {filled && (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M2.5 6.2 4.8 8.5 9.5 3.8"
-              stroke="var(--bg)"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </span>
-
-      <span className="min-w-0 flex-1">
-        <span className="body block font-medium">{label}</span>
-        <span className="caption block truncate">
-          {filled
-            ? `${count} file${count > 1 ? "s" : ""} selected`
-            : hint}
+      {/* The mark sits above the title, not beside it. Inline, every row's
+          circle would land at a different x as the titles differ in width —
+          centred, but ragged. Stacked, the whole column lines up. */}
+      <span className="flex flex-col items-center gap-2">
+        <span
+          aria-hidden
+          className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full"
+          style={{
+            border: filled ? "none" : "1px solid var(--line-2)",
+            background: filled ? "var(--ink)" : "transparent",
+            transition: "background-color var(--t-fast) var(--ease-out)",
+          }}
+        >
+          {filled && (
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2.5 6.2 4.8 8.5 9.5 3.8"
+                stroke="var(--bg)"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </span>
+        <span className="body font-medium">{label}</span>
       </span>
 
-      <span className="micro shrink-0" style={{ color: "var(--ink-3)" }}>
-        {filled ? "Change" : "Choose"}
+      <span className="caption">
+        {filled ? `${count} file${count > 1 ? "s" : ""} selected` : hint}
       </span>
     </label>
   );

@@ -154,7 +154,7 @@ export function Filmstrip({
         })}
       </div>
 
-      <p className="micro mt-2">
+      <p className="micro mx-auto mt-2 max-w-[44ch]">
         Each block is one shot — as wide as it holds. Dashed blocks have no clip
         yet.
       </p>

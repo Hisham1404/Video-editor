@@ -20,26 +20,36 @@ function hash(n: number, salt: number) {
   return x - Math.floor(x);
 }
 
+/** Two decimals is plenty, and it matters: raw Math.sin output like
+ *  51.54675115903956% is re-serialised by the browser as 51.5468%, so the
+ *  server HTML and the client style object disagree and React reports a
+ *  hydration mismatch. Round here and both sides emit the same string. */
+const r2 = (n: number) => Math.round(n * 100) / 100;
+
 /** The wash for any seed. Exported so project cards can reuse it. */
 export function washStyle(seed: number, rank = 3): React.CSSProperties {
   const i = seed;
   // Cool-to-warm drift, kept in a narrow, filmic band.
-  const hue = 190 + hash(i, 1) * 60;
-  const sat = 8 + hash(i, 2) * 10;
+  const hue = r2(190 + hash(i, 1) * 60);
+  const sat = r2(8 + hash(i, 2) * 10);
   // Wider shots read brighter; tighter shots sit darker and closer.
-  const light = 58 - rank * 4.5;
-  const angle = 120 + hash(i, 3) * 120;
-  const spot = 30 + hash(i, 4) * 40;
+  const light = r2(58 - rank * 4.5);
+  const angle = r2(120 + hash(i, 3) * 120);
+  const spotX = r2(30 + hash(i, 4) * 40);
+  const spotY = r2(25 + hash(i, 5) * 30);
+  const lift = r2(light + 12);
+  const sink = r2(Math.max(12, light - 22));
+  const hue2 = r2(hue + 18);
+  const sat2 = r2(sat + 4);
 
+  // Single line, no newlines or padding — whitespace is another thing the
+  // browser normalises away, and another way to desync the two renders.
   return {
-    background: `
-      radial-gradient(60% 70% at ${spot}% ${25 + hash(i, 5) * 30}%,
-        hsl(${hue} ${sat}% ${light + 12}%) 0%,
-        transparent 70%),
-      linear-gradient(${angle}deg,
-        hsl(${hue} ${sat}% ${light}%) 0%,
-        hsl(${hue + 18} ${sat + 4}% ${Math.max(12, light - 22)}%) 100%)
-    `,
+    background:
+      `radial-gradient(60% 70% at ${spotX}% ${spotY}%, ` +
+      `hsl(${hue} ${sat}% ${lift}%) 0%, transparent 70%), ` +
+      `linear-gradient(${angle}deg, hsl(${hue} ${sat}% ${light}%) 0%, ` +
+      `hsl(${hue2} ${sat2}% ${sink}%) 100%)`,
   };
 }
 

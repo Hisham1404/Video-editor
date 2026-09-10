@@ -6,13 +6,13 @@ export default function NotFound() {
   return (
     <main
       id="content"
-      className="mx-auto flex min-h-svh w-full max-w-[560px] flex-col justify-center px-5 py-16 sm:px-8"
+      className="mx-auto flex min-h-svh w-full max-w-[520px] flex-col items-center justify-center px-5 py-16 text-center sm:px-8"
     >
       <p className="eyebrow">404</p>
       <h1 className="display mt-3 text-balance">
         That page isn&apos;t here.
       </h1>
-      <p className="caption mt-4 max-w-[46ch]">
+      <p className="caption mx-auto mt-4 max-w-[42ch]">
         It may have moved, or the link may be wrong. Nothing you were working on
         has been lost.
       </p>

@@ -30,9 +30,9 @@ export default function Analysing({ onDone }: { onDone: () => void }) {
   const pct = Math.min(100, (step / STAGES.length) * 100);
 
   return (
-    <div className="mx-auto w-full max-w-[460px] py-8">
+    <div className="mx-auto w-full max-w-[420px] py-4 text-center">
       <h1 className="title">Reading the reference</h1>
-      <p className="caption mt-1">
+      <p className="caption mx-auto mt-1 max-w-[36ch]">
         Shot boundaries, then rhythm, then what each shot is doing.
       </p>
 
@@ -54,24 +54,22 @@ export default function Analysing({ onDone }: { onDone: () => void }) {
         />
       </div>
 
-      <ol className="mt-8 space-y-0">
+      <ol className="mt-8">
         {STAGES.map((s, i) => {
           const state = i < step ? "done" : i === step ? "running" : "waiting";
           return (
             <li
               key={s.n}
-              className="flex items-center gap-3 py-2.5"
+              className="flex items-center justify-center gap-2.5 py-2.5"
               style={{
                 opacity: state === "waiting" ? 0.32 : 1,
                 transition: "opacity var(--t-base) var(--ease-out)",
               }}
             >
               <Mark state={state} />
-              <span className="min-w-0 flex-1">
-                <span className="body block truncate">{s.name}</span>
-              </span>
+              <span className="body">{s.name}</span>
               {s.metered && (
-                <span className="micro shrink-0" style={{ color: "var(--accent)" }}>
+                <span className="micro" style={{ color: "var(--accent)" }}>
                   metered
                 </span>
               )}
@@ -108,7 +106,10 @@ function Mark({ state }: { state: "done" | "running" | "waiting" }) {
       {state === "running" && (
         <span
           className="h-1.5 w-1.5 rounded-full"
-          style={{ background: "var(--ink)", animation: "pulse 1.1s ease-in-out infinite" }}
+          style={{
+            background: "var(--ink)",
+            animation: "pulse 1.1s ease-in-out infinite",
+          }}
         />
       )}
       <style>{`@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}`}</style>
