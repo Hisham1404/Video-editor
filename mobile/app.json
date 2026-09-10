@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Reel Editor",
-    "slug": "reel-editor",
+    "slug": "nova",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,7 +10,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "CADisableMinimumFrameDurationOnPhone": true
-      }
+      },
+      "bundleIdentifier": "com.hisham1404.reeleditor"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +23,8 @@
       "predictiveBackGestureEnabled": false,
       "edgeToEdgeEnabled": true,
       "compileSdkVersion": 35,
-      "targetSdkVersion": 35
+      "targetSdkVersion": 35,
+      "package": "com.hisham1404.reeleditor"
     },
     "web": {
       "favicon": "./assets/favicon.png"
