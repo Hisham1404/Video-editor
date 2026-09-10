@@ -8,7 +8,7 @@ import { MOCK_TEMPLATE } from "@/lib/template";
 
 export default function CutPage() {
   const router = useRouter();
-  const restart = useCallback(() => router.push("/"), [router]);
+  const restart = useCallback(() => router.push("/new"), [router]);
   return (
     <Shell step={3} back="/">
       <Result template={MOCK_TEMPLATE} onRestart={restart} />

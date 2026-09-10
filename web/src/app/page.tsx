@@ -1,17 +1,12 @@
-"use client";
+import Home from "@/components/Home";
 
-import { useRouter } from "next/navigation";
-import { useCallback } from "react";
-import Setup from "@/components/Setup";
-import Shell from "@/components/Shell";
-
-export default function SetupPage() {
-  const router = useRouter();
-  // Warm the next route while the user is still choosing files.
-  const go = useCallback(() => router.push("/analyse"), [router]);
+export default function HomePage() {
   return (
-    <Shell step={1}>
-      <Setup onAnalyze={go} />
-    </Shell>
+    <main
+      id="content"
+      className="mx-auto w-full max-w-[900px] px-5 py-10 sm:px-8 sm:py-14"
+    >
+      <Home />
+    </main>
   );
 }

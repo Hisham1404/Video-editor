@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import {
   type Slot,
@@ -15,11 +14,6 @@ import {
  * Deliberately not a modal: there is room for it on every size, so covering
  * the cut to describe one shot of it would be a worse trade. Nothing to
  * dismiss, nothing to trap you.
- *
- * The swap animates because the text would otherwise teleport between two
- * different shots — bridging that is the purpose, not decoration. It is a
- * short cross-fade with a few pixels of travel, on an element you change tens
- * of times a session, so it stays near-imperceptible.
  */
 export default function ShotDetail({
   slot,
@@ -32,34 +26,34 @@ export default function ShotDetail({
   matched: number;
   gaps: number;
 }) {
+  /**
+   * No AnimatePresence here, deliberately.
+   *
+   * Selecting a shot happens tens of times in a session, which is the tier
+   * where motion should be near-imperceptible or absent. And `mode="wait"`
+   * gates the incoming content on the outgoing exit animation — so if
+   * requestAnimationFrame is throttled (a backgrounded tab, a busy main
+   * thread) the panel silently stops updating while the rest of the page
+   * keeps working. Content should never be hostage to a decoration.
+   *
+   * The keyed CSS animation below is pure decoration: the text is in the DOM
+   * immediately either way.
+   */
   return (
     <div className="min-h-[104px]">
-      <AnimatePresence mode="wait" initial={false}>
-        {slot ? (
-          <motion.div
-            key={slot.index}
-            initial={{ opacity: 0, transform: "translateY(4px)" }}
-            animate={{ opacity: 1, transform: "translateY(0px)" }}
-            exit={{ opacity: 0, transform: "translateY(-4px)" }}
-            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-          >
-            <Body slot={slot} bpm={bpm} />
-          </motion.div>
-        ) : (
+      {slot ? (
+        <div key={slot.index} className="rise">
+          <Body slot={slot} bpm={bpm} />
+        </div>
+      ) : (
           /* Reserving a block for the detail and then filling it with
-             "select something" wastes the space. Say what the shape above
+             "select something" wastes the space. Say what the strip above
              actually shows instead. */
-          <motion.div
-            key="empty"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.16 }}
-          >
-            <p className="eyebrow">The shape of the edit</p>
+          <div>
+            <p className="eyebrow">The cut so far</p>
             <p className="body mt-2 max-w-[52ch]">
-              Taller bars are wider shots, width is how long each holds.{" "}
-              <span className="num">{matched}</span> came from your footage
+              <span className="num">{matched}</span> shots came from your
+              footage
               {gaps > 0 && (
                 <>
                   {", "}
@@ -71,10 +65,11 @@ export default function ShotDetail({
               )}
               .
             </p>
-            <p className="caption mt-1">Tap a bar to inspect it.</p>
-          </motion.div>
+            <p className="caption mt-1">
+              Pick a shot from the strip to see what it is.
+            </p>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }

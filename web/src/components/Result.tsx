@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Strip, { StripSummary } from "@/components/Strip";
+import { Filmstrip, Poster } from "@/components/Preview";
 import ShotDetail from "@/components/ShotDetail";
 import Tempo from "@/components/Tempo";
 import {
@@ -22,19 +22,21 @@ export default function Result({
   const [bpm, setBpm] = useState(112);
   const [selected, setSelected] = useState<number | null>(null);
 
-  const slot =
-    selected === null
-      ? null
-      : (template.slots.find((s) => s.index === selected) ?? null);
   const gaps = template.slots.filter(isGap);
+  // The poster always shows something. An empty player teaches nothing.
+  const shown =
+    (selected === null
+      ? template.slots[0]
+      : template.slots.find((s) => s.index === selected)) ?? template.slots[0];
 
   return (
     <div className="mx-auto w-full max-w-[720px]">
       <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div className="min-w-0">
-          <h1 className="title">Your cut</h1>
+          <h1 className="title">Dusk city walk</h1>
           <p className="caption mt-1 num">
-            {template.slots.length} shots · {formatSeconds(totalSeconds(template, bpm))}
+            {template.slots.length} shots ·{" "}
+            {formatSeconds(totalSeconds(template, bpm))}
             {gaps.length > 0 && (
               <>
                 {" · "}
@@ -55,14 +57,22 @@ export default function Result({
         </button>
       </header>
 
-      <div className="mt-8">
-        <Strip template={template} selected={selected} onSelect={setSelected} />
-        <StripSummary template={template} />
+      {/* The cut, seen before it's described. */}
+      <div className="mt-7">
+        <Poster slot={shown} bpm={bpm} total={template.slots.length} />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5">
+        <Filmstrip
+          template={template}
+          selected={selected}
+          onSelect={setSelected}
+        />
+      </div>
+
+      <div className="mt-7">
         <ShotDetail
-          slot={slot}
+          slot={selected === null ? null : shown}
           bpm={bpm}
           matched={template.slots.length - gaps.length}
           gaps={gaps.length}
@@ -115,7 +125,7 @@ export default function Result({
           className="press micro mt-4 underline underline-offset-4"
           style={{ color: "var(--ink-2)" }}
         >
-          Start over
+          Start another cut
         </button>
       </footer>
     </div>
