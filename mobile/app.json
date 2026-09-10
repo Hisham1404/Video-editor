@@ -34,6 +34,11 @@
     ],
     "scheme": "reeleditor",
     "backgroundColor": "#0A0A0B",
-    "newArchEnabled": true
+    "newArchEnabled": true,
+    "extra": {
+      "eas": {
+        "projectId": "96c9a5ec-efbd-4357-9ae2-9df0a2fbeae9"
+      }
+    }
   }
 }
