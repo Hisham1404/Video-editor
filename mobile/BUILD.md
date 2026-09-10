@@ -32,6 +32,35 @@ root is **not** the Expo project.
 
 ---
 
+## State as of the last attempt
+
+Three config problems have already been found and fixed (commit `9b5a01b`),
+each of which only surfaced once the previous one was cleared:
+
+| Was | Now |
+|---|---|
+| `slug: reel-editor` ≠ the linked EAS project `nova` | `slug: nova` (display `name` is still "Reel Editor") |
+| no `android.package` | `com.hisham1404.reeleditor` |
+| no `ios.bundleIdentifier` | `com.hisham1404.reeleditor` |
+
+The build now gets as far as resolving the `preview` profile and setting
+`versionCode` 1, then stops on one thing and one thing only:
+
+```
+✔ Using remote Android credentials (Expo server)
+Generating a new Keystore is not supported in --non-interactive mode
+```
+
+**This cannot be automated away.** It is not a missing flag — EAS deliberately
+refuses to mint a signing key without a human present, because the key is what
+proves future updates come from the same author. Generating one locally with
+`keytool` and uploading it is the documented alternative, but that needs a JDK,
+and there is none on this machine.
+
+So: Step 2 has to be run once with a terminal attached. Every build after it —
+including `--non-interactive` ones and the GitHub dashboard flow — works
+unattended, because EAS stores the keystore against the project.
+
 ## Step 1 — Log in (a human must do this)
 
 ```bash
@@ -49,6 +78,8 @@ Verify, and stop here if it fails:
 ```bash
 eas whoami
 ```
+
+Already done — this returns `hisham1404`.
 
 ## Step 2 — Build the APK
 
