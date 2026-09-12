@@ -105,6 +105,10 @@ PAGE = """<!doctype html>
     <button class="ghost" id="skip">Unsure (s)</button>
   </div>
   <button id="save">Save labels.json</button>
+  <button class="ghost" id="copy" style="display:none">Copy to clipboard</button>
+  <textarea id="out" readonly style="display:none;height:90px;background:var(--bg);
+    color:var(--dim);border:1px solid var(--line);border-radius:6px;font:11px
+    ui-monospace,monospace;padding:6px"></textarea>
   <div class="tally" id="tally"></div>
   <div class="note">
     <b>Space</b> agrees with my guess and moves on. <b>1–7</b> overrides it.
@@ -119,6 +123,11 @@ let labels={}, changed={}, dropped={};
 try { const s=JSON.parse(localStorage.getItem("shotscale_review")||"{}");
       labels=s.labels||{}; changed=s.changed||{}; dropped=s.dropped||{}; } catch(e){}
 let i=0; const $=id=>document.getElementById(id);
+// Probe once rather than trusting it. On file:// the origin is opaque and some
+// browsers refuse storage outright; the user needs to know that BEFORE
+// labelling 267 frames, not after a reload eats them.
+let STORAGE_OK=false;
+try { localStorage.setItem("__t","1"); localStorage.removeItem("__t"); STORAGE_OK=true; } catch(e){}
 
 CLASSES.forEach(([k,id,name,desc])=>{
   const li=document.createElement("li"); li.dataset.id=id;
@@ -138,7 +147,9 @@ function render(){
     `<div>agreed with me: <b>${agreed}</b></div>`+
     `<div>you changed: <b>${nch}</b></div>`+
     `<div>dropped: <b>${ndr}</b></div>`+
-    (done? `<div style="margin-top:4px">agreement so far: <b>${(agreed/(agreed+nch||1)*100).toFixed(1)}%</b></div>`:"");
+    (done? `<div style="margin-top:4px">agreement so far: <b>${(agreed/(agreed+nch||1)*100).toFixed(1)}%</b></div>`:"")+
+    (STORAGE_OK? "" : `<div style="margin-top:6px;color:var(--warn)"><b>Browser storage is blocked.</b>
+       Nothing is saved until you click Save — do not reload this page.</div>`);
   if(i>=n){
     $("frame").style.display="none"; $("flag").style.display="none";
     $("done").style.display="flex"; $("pos").textContent="finished";
@@ -176,13 +187,24 @@ addEventListener("keydown",e=>{
   const hit=CLASSES.find(c=>c[0]===e.key); if(hit) pick(hit[1]);
 });
 $("accept").onclick=accept; $("skip").onclick=drop; $("back").onclick=back;
+function payload(){ return JSON.stringify({labels,changed,dropped},null,1); }
 $("save").onclick=()=>{
-  const blob=new Blob([JSON.stringify(labels,null,1)],{type:"application/json"});
+  // ONE file. Two downloads from one page is blocked by every browser unless
+  // the user grants permission, and the refusal is silent -- the button looks
+  // like it worked while the file on disk stayed eight labels old.
+  const blob=new Blob([payload()],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="labels.json"; a.click();
-  const meta=new Blob([JSON.stringify({changed,dropped},null,1)],{type:"application/json"});
-  const b=document.createElement("a"); b.href=URL.createObjectURL(meta);
-  b.download="review_meta.json"; b.click();
+  $("out").value=payload(); $("out").style.display="block";
+  $("copy").style.display="block";
+};
+$("copy").onclick=async()=>{
+  // Downloads can be blocked by policy or a sandbox; clipboard is the fallback
+  // that does not depend on the file system at all.
+  try { await navigator.clipboard.writeText(payload());
+        $("copy").textContent="Copied — paste into labels.json"; }
+  catch(e){ $("out").select(); document.execCommand("copy");
+            $("copy").textContent="Copied (fallback)"; }
 };
 const first=FRAMES.findIndex(f=>!(f.frame in labels)&&!(f.frame in dropped));
 i=first===-1?FRAMES.length:first;
