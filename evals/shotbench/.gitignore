@@ -14,5 +14,11 @@ results/*
 # Pre-parser-fix snapshots. Superseded by the re-scored files; kept locally.
 *.prefix-backup
 
+# Quarantined runs: a full row count of nothing but errors, kept as evidence of
+# the bug and out of the results the report reads. Already excluded by the
+# results/* rule above, since the extension is no longer .jsonl -- named here so
+# that is deliberate rather than lucky.
+*.kernel-failure
+
 __pycache__/
 *.pyc
