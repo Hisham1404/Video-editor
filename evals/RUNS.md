@@ -26,6 +26,7 @@ with `python evals/shotbench/analyze.py`. Conclusions live in `FINDINGS.md`.
 | ShotVL-7B | 859 | 54.8% | 65.7% | 10.0% | returns an empty string on 9.9% of images |
 | Qwen3-VL-4B | 859 | 46.9% | 64.4% | 17.6% | |
 | Qwen3-VL-2B | 859 | 44.8% | 61.8% | 10.4% | |
+| llama-3.2-11b-vision | 859 | 37.6% | 51.7% | — | API; last of every complete run, and the priciest at 1623 in-tok/item |
 
 "void" = the model refused rather than guessed, so the blind run measured
 nothing. See `FINDINGS.md` §4 — a refusal scored as a wrong answer reads as the
@@ -55,7 +56,6 @@ ShotVL-3B's 66.8% against a published 65.1% is what certifies the harness.
 
 | Model | Dataset | Why |
 |---|---|---|
-| llama-3.2-11b-vision | — | complete at 859: **51.7%**, last of every finished run, and the priciest arm at 1623 in-tok/item. Ruled out |
 | Qwen3.6-35B-A3B-FP8 | ShotBench | the 3572-row file was entirely `ImportError` from the pre-`kernels` run; resume treats an error row as done and skipped all of them. Quarantined to `.kernel-failure` |
 | gemma-4-26B-A4B, gemma-4-31B | ShotBench | instance released before stage 3/3 |
 | gemma ×2 | film-grab blind | refusal, not an answer — void |
