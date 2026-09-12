@@ -47,8 +47,25 @@ hours. Decide that after Step 7 prints the item count — not before.
 Many CUDA images eat 20 GB before you start. Running out mid-download wastes an
 hour of billed time.
 
-Also require: **NVIDIA driver supporting CUDA 12.4** (the `torch` wheel this repo
-pins is `cu124`), and Ubuntu 22.04 or 24.04.
+Also require **Ubuntu 22.04 or 24.04**.
+
+### On the CUDA version
+
+The repo pins a `cu124` torch wheel, but Shadeform's L40S image ships
+**Ubuntu 22.04 + CUDA 13.0 ML**. That mismatch is fine and is not a reason to
+hunt for a different image: NVIDIA drivers are backward compatible with older
+CUDA runtimes, and the wheel carries its own runtime — a CUDA 13 driver runs a
+cu124 build.
+
+It is still the first thing to verify, because it is cheap to check and
+expensive to assume. Step 7's `torch.cuda.is_available()` is that check, and it
+runs **before** any model download.
+
+If it comes back `False`, the fix is a newer wheel, not a new instance:
+
+```bash
+pip install --force-reinstall torch --index-url https://download.pytorch.org/whl/cu128
+```
 
 ---
 
@@ -221,6 +238,11 @@ python run_benchmark.py --report
 **In the Shadeform console, by hand.** Billing is hourly and runs until the
 instance is destroyed, not until you disconnect.
 
+At **$0.88/hr**, the expected job — roughly an hour of setup and downloads plus
+the sweep itself — lands near **$7**. Left running by accident, the same instance
+burns about **$21 a day**. Set a phone timer when you deploy; that is the entire
+safeguard.
+
 Then clean up locally:
 
 ```bash
@@ -241,7 +263,7 @@ reassigned to someone else.
 | `CUDA out of memory` on the 9B | 24 GB card, 8 frames | `--video-frames 4`, or provision 48 GB |
 | `No space left on device` mid-download | Root volume under 150 GB | Nothing to do but reprovision — check in Step 3 |
 | Run dies when the laptop sleeps | Command ran in the foreground | It must be inside `tmux` (Step 8) |
-| `torch.cuda.is_available()` is False | Driver older than the cu124 wheel | Reprovision with a current CUDA image |
+| `torch.cuda.is_available()` is False | Wheel/driver mismatch | Reinstall torch from the `cu128` index — **not** a reprovision |
 | Numbers far below published averages | `extract_answer` mis-parsing, not model quality | Inspect raw `response` fields in the JSONL before drawing conclusions |
 
 ## Do not
