@@ -41,15 +41,15 @@ fi
 
 echo
 echo "### 1/3  film-grab, sighted"
-python run_benchmark.py --dataset filmshots --models $SET
+python -u run_benchmark.py --dataset filmshots --models $SET
 
 echo
 echo "### 2/3  film-grab, blind — contamination control"
-python run_benchmark.py --dataset filmshots --no-image --models $SET
+python -u run_benchmark.py --dataset filmshots --no-image --models $SET
 
 echo
 echo "### 3/3  ShotBench, sighted"
-python run_benchmark.py --models $SET
+python -u run_benchmark.py --models $SET
 
 echo
 echo "=== DONE $(date -u +%FT%TZ) ==="

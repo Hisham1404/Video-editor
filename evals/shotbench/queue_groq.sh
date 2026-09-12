@@ -4,5 +4,5 @@
 # requests. The backend paces itself from the rate-limit headers.
 cd "D:/video editor/evals/shotbench"
 echo "=== GROQ qwen3.8-27b on film-grab, full 859 ==="
-python run_benchmark.py --dataset filmshots --models groq-qwen3.8-27b
+python -u run_benchmark.py --dataset filmshots --models groq-qwen3.8-27b
 echo "=== GROQ QUEUE DONE $(date -u +%FT%TZ) ==="

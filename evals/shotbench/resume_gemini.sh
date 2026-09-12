@@ -63,7 +63,7 @@ PY
 
 echo
 echo "resuming. The 429 rows were compacted out, so this starts at item $have."
-python run_benchmark.py --dataset filmshots --models gemini-lite
+python -u run_benchmark.py --dataset filmshots --models gemini-lite
 
 echo
 echo "rescoring:"

@@ -21,22 +21,22 @@ df -h / | tail -1
 
 echo
 echo "### 1/3  film-grab, sighted — the independent set that decides ranking"
-python run_benchmark.py --dataset filmshots --models $SET
+python -u run_benchmark.py --dataset filmshots --models $SET
 
 echo
 echo "### 2/3  film-grab, blind — the contamination control"
 # The classifier is excluded: with no image there is nothing to classify, so a
 # blind run would measure nothing and bank a fake number.
-python run_benchmark.py --dataset filmshots --no-image \
+python -u run_benchmark.py --dataset filmshots --no-image \
     --models qwen3-vl-2b qwen3-vl-4b qwen3.6-35b-a3b-fp8
 
 echo
 echo "### 3/3  ShotBench, sighted — comparability with the published leaderboard"
-python run_benchmark.py --models $SET
+python -u run_benchmark.py --models $SET
 
 echo
 echo "=== DONE $(date -u +%FT%TZ) ==="
-python run_benchmark.py --report | tail -40
+python -u run_benchmark.py --report | tail -40
 echo
 echo "Pull the results down, then DESTROY THE INSTANCE:"
 echo '  scp shadeform:~/ve/evals/shotbench/results/*.jsonl ./results/'
