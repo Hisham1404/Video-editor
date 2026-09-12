@@ -10,6 +10,13 @@ is the only space in which every model here is comparable (chance 20%).
 Regenerate the 5-class column, the significance tests and the agreement table
 with `python evals/shotbench/analyze.py`. Conclusions live in `FINDINGS.md`.
 
+Accuracy is over items the provider **delivered**. A run cut short by an API
+quota is scored on what it answered and flagged, never penalised for the rows
+it never got to attempt.
+
+**Both GPU instances were destroyed on 2026-09-12.** Everything below is pulled
+down and versioned; nothing is left on rented hardware.
+
 ---
 
 ## Done — film-grab (859 human-labelled frames, independent set)
@@ -49,17 +56,18 @@ ShotVL-3B's 66.8% against a published 65.1% is what certifies the harness.
 
 | Model | Dataset | n / 859 | 5-class | Notes |
 |---|---|---|---|---|
-| nemotron-3-nano-omni-30b | film-grab | 596 | 66.6% | 284 tok/image, 4× cheaper than Gemini |
-| gemini-3.5-flash-lite | film-grab | 631 | 56.1% | **133 errors (21%)** — the incumbent default |
+| nemotron-3-nano-omni-30b | film-grab | 612 | 66.7% | running; 284 tok/image, 4× cheaper than Gemini |
+| gemini-3.5-flash-lite | film-grab | 498 | **71.1%** | **quota wall at item 498** — every row since is HTTP 429. Not a model fault |
 
 ## Not obtained
 
 | Model | Dataset | Why |
 |---|---|---|
-| Qwen3.6-35B-A3B-FP8 | ShotBench | the 3572-row file was entirely `ImportError` from the pre-`kernels` run; resume treats an error row as done and skipped all of them. Quarantined to `.kernel-failure` |
-| gemma-4-26B-A4B, gemma-4-31B | ShotBench | instance released before stage 3/3 |
+| Qwen3.6-35B-A3B-FP8 | ShotBench | L40S destroyed. The 3572-row file was entirely `ImportError` from the pre-`kernels` run; resume treats an error row as done and skipped all of them. Quarantined to `.kernel-failure` |
+| gemma-4-26B-A4B, gemma-4-31B | ShotBench | A100 destroyed before stage 3/3 |
 | gemma ×2 | film-grab blind | refusal, not an answer — void |
-| qwen/qwen3.8-27b (Groq) | film-grab | abandoned at 75/859; free tier caps at 200k tokens/day, this run needs 1.78M |
+| qwen/qwen3.8-27b (Groq) | film-grab | abandoned at 72 delivered (**51.4%**); free tier caps at 200k tokens/day, this run needs 1.78M |
+| gemini-3.5-flash-lite | ShotBench | queued, but the free tier cannot deliver 859 items let alone 3572. Needs billing enabled |
 
 ## Next — the only test that decides anything
 

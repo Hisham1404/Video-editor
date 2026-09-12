@@ -109,14 +109,19 @@ Scored identically, collapsed to 5 classes (chance 20%), same 859 items:
 | gemma-4-26B-A4B | 51.6 GB | 78.0% |
 | Qwen3.5-9B | 19.3 GB | 72.8% |
 | Qwen3.6-35B-A3B-FP8 | 37.5 GB (MoE) | 72.3% |
+| gemini-3.5-flash-lite | API | 71.1% *(498 delivered, then quota-walled)* |
 | Qwen3-VL-8B | 17.5 GB | 69.8% |
+| nemotron-omni | API | 66.7% *(612 items, running)* |
 | ShotVL-3B | 7.5 GB | 66.7% |
-| nemotron-omni | API | 66.6% *(596 items, running)* |
 | ShotVL-7B | 16.6 GB | 65.7% |
 | Qwen3-VL-4B | 8.9 GB | 64.4% |
 | Qwen3-VL-2B | 4.3 GB | 61.8% |
-| gemini-3.5-flash-lite | API | 56.1% *(631 items, 133 errors)* |
 | llama-3.2-11b-vision | API | 51.7% |
+| qwen3.8-27b (Groq) | API | 51.4% *(72 delivered, then quota-walled)* |
+
+Scored over items the provider **delivered**. An HTTP 429 is a fact about a
+billing quota, not about a model's eyesight, so it is out of the denominator —
+see §7, where dividing by it produced a sixth fake result.
 
 gemma-4-31B is 3 points ahead of the classifier and **that gap is not
 significant**. McNemar on the paired items — the right test, because both models
@@ -199,19 +204,28 @@ Every one of these read as "this model is bad" and was not.
 | Groq "hangs" | 200k tokens/day cap. Invisible: headers report only the per-minute bucket, which reads full |
 | Qwen3.6-35B-A3B-FP8 **0.0%** on ShotBench *after* the fix | **Resume treats an error row as a completed row.** The 3,572 rows from the pre-`kernels` failure were all `ImportError`; the re-run skipped every one of them and "finished" instantly with a full row count and a fresh mtime. Quarantined to `.kernel-failure`; the result is simply missing |
 | Gemma scores a perfect **0.0%** blind | Refusal, not a wrong answer — see §4. The report called it the cleanest result in the table |
+| gemini-3.5-flash-lite "gets 21% wrong" | **Mine.** The 5-class table divided correct answers by rows *attempted*, so 135 HTTP 429s counted as 135 wrong answers and dropped a 71.1% model to 56.1% — below models it actually beats. Fixed in `analyze.py`: provider errors leave the denominator, refusals do not |
 
-**The pattern: a missing dependency, a parser assumption, or a resume rule
-produces a clean, plausible zero.** Four separate 0.0% results were harness
-bugs and a fifth was an abstention misread as evidence. Nothing here is
-trustworthy without reading the raw model output — `raw` is stored on every row
-for exactly this reason.
+**The pattern: every one of these is an infrastructure failure wearing a model
+result's clothing.** A missing dependency, a parser assumption, a resume rule
+and a denominator each produced a number that was plausible, precise, and about
+the harness rather than the model. Four were clean 0.0% zeros, a fifth was an
+abstention misread as evidence, and the sixth was written by the tool built to
+catch the other five — which is the point: the failure mode does not go away
+once you know about it.
+
+Nothing here is trustworthy without reading the raw model output. `raw` is
+stored on every row for exactly this reason, and checking it is what caught
+every entry in this table.
 
 Two defects that are real, not harness artifacts:
 
 - **ShotVL-7B returns an empty string on ~3% of images** (9.9% on film-grab),
   deterministically, images only. More tokens do not fix it.
-- **gemini-3.5-flash-lite errored on 119 of 617 film-grab items** (19%) — the
-  incumbent production default, on the only independent test set.
+- **gemini-3.5-flash-lite cannot finish a run on the free tier.** It stopped
+  dead at item 498 of 859 and every row after it is an HTTP 429. Same wall as
+  Groq, different number. A 3,572-item ShotBench pass is not reachable without
+  billing enabled.
 
 ## 8. Cost
 
@@ -233,9 +247,11 @@ accurate option measured for that one field regardless of budget.
 **Stage 6** discounts the shot-size term of a match score by that confidence, so
 an asset two models disagreed about loses a tie to one they read the same way.
 
-**Stage 3** is still open. Gemini flash-lite, nemotron-omni (284 tokens/image —
-4× cheaper than Gemini) and Qwen3.5-9B are within a few points of each other,
-and flash-lite's 19% error rate on film-grab is a mark against the incumbent.
+**Stage 3** is still open. Gemini flash-lite (71.1%), Qwen3.5-9B (72.8%) and
+nemotron-omni (66.7%, 284 tokens/image — 4× cheaper than Gemini) are within a
+few points of each other. flash-lite is a genuine contender on accuracy; its
+problem is that the free tier cannot complete a run, so any real comparison
+needs billing switched on first.
 
 **gemma-4-31B is the accuracy ceiling found, and is not deployable** under the
 local-and-free rule at 62.5 GB. It is worth knowing as the ceiling: nothing

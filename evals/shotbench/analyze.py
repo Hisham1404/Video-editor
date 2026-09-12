@@ -95,7 +95,8 @@ def main() -> None:
     print("=" * 92)
     print("5-CLASS ACCURACY -- every model on the same taxonomy")
     print("=" * 92)
-    print(f"{'run':46} {'n':>5} {'5-class':>8} {'scored':>7} {'no answer':>10} {'errors':>7}")
+    print(f"{'run':46} {'n':>5} {'5-class':>8} {'delivered':>9} "
+          f"{'no answer':>10} {'errors':>7}")
     rows = []
     for path in sorted(glob.glob(str(results / "*filmshots*.jsonl"))):
         name = Path(path).name[:-len(".jsonl")]
@@ -115,12 +116,24 @@ def main() -> None:
                 declined += 1
             elif pred == gold:
                 ok += 1
-        rows.append((name, n, ok, n - errored - declined, declined, errored))
-    for name, n, ok, scored, declined, errored in sorted(
-            rows, key=lambda r: -(r[2] / r[1] if r[1] else 0)):
-        print(f"{name:46} {n:5} {ok / n * 100:7.1f}% {scored:7} {declined:10} {errored:7}")
-    print("\n  'no answer' is not the same as wrong. A run with every row in that\n"
-          "  column measured nothing -- see FINDINGS.md section 4.")
+        rows.append((name, n, ok, n - errored, declined, errored))
+    # Accuracy divides by what the PROVIDER delivered, not by rows attempted.
+    # An HTTP 429 is a fact about a billing quota, not about the model's
+    # eyesight; dividing by it turned "ran out of free tier at item 498" into
+    # "gets a fifth of them wrong", which is the same class of mistake as every
+    # fake zero in FINDINGS.md section 7 -- an infrastructure failure read as a
+    # model result. An unparseable or refused answer IS counted wrong, since
+    # that is the model's own behaviour, but it is broken out separately because
+    # a run that is nothing but refusals measured nothing at all.
+    for name, n, ok, delivered, declined, errored in sorted(
+            rows, key=lambda r: -(r[2] / r[3] if r[3] else 0)):
+        acc = ok / delivered * 100 if delivered else 0.0
+        flag = "  <- truncated" if errored and errored / n > 0.05 else ""
+        print(f"{name:46} {n:5} {acc:7.1f}% {delivered:7} {declined:10} "
+              f"{errored:7}{flag}")
+    print("\n  '5-class' is scored over delivered items: provider errors are out of\n"
+          "  the denominator, refusals are not. A run whose rows are all in the\n"
+          "  'no answer' column measured nothing -- see FINDINGS.md section 4.")
 
     available = {p.name[:-len(".filmshots.jsonl")]
                  for p in results.glob("*.filmshots.jsonl")}
