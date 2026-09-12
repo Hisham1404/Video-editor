@@ -132,7 +132,9 @@ def main() -> None:
     pairs = [("gemma-4-31b", "dinov2-shotscale"),
              ("gemma-4-26b-a4b", "dinov2-shotscale"),
              ("dinov2-shotscale", "qwen3.5-9b"),
-             ("gemma-4-31b", "gemma-4-26b-a4b")]
+             ("gemma-4-31b", "gemma-4-26b-a4b"),
+             ("dinov2-shotscale", "qwen3.6-35b-a3b-fp8"),
+             ("qwen3.5-9b", "qwen3.6-35b-a3b-fp8")]
     for na, nb in pairs:
         if na not in available or nb not in available:
             print(f"  skipped {na} vs {nb} (missing result)")
@@ -154,7 +156,8 @@ def main() -> None:
     print(f"  {'second tagger':<20} {'agree':>7} {'acc|agree':>10} "
           f"{'acc|disagree':>13} {'spread':>7} {'2nd right on disagree':>22}")
     for m in ["gemma-4-31b", "gemma-4-26b-a4b", "qwen3.5-9b",
-              "qwen3-vl-8b", "qwen3-vl-4b", "qwen3-vl-2b"]:
+              "qwen3.6-35b-a3b-fp8", "qwen3-vl-8b", "qwen3-vl-4b",
+              "qwen3-vl-2b"]:
         if m not in available:
             continue
         v = load(m)

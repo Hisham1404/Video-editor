@@ -20,6 +20,7 @@ with `python evals/shotbench/analyze.py`. Conclusions live in `FINDINGS.md`.
 | **dinov2-shotscale** | 859 | — | **78.0%** | n/a | 1.2 GB classifier; 7-class is meaningless for it |
 | gemma-4-26B-A4B | 859 | 62.5% | 78.0% | void | MoE, ~4B active |
 | Qwen3.5-9B | 859 | 54.2% | 72.8% | 8.4% | best model that fits a consumer card |
+| Qwen3.6-35B-A3B-FP8 | 859 | 61.8% | 72.3% | 8.8% | MoE, ~3B active; ties the 19 GB dense model |
 | Qwen3-VL-8B | 859 | 49.7% | 69.8% | 10.5% | |
 | ShotVL-3B | 859 | 53.6% | 66.7% | 12.6% | |
 | ShotVL-7B | 859 | 54.8% | 65.7% | 10.0% | returns an empty string on 9.9% of images |
@@ -47,15 +48,14 @@ ShotVL-3B's 66.8% against a published 65.1% is what certifies the harness.
 
 | Model | Dataset | n / 859 | 5-class | Notes |
 |---|---|---|---|---|
-| nemotron-3-nano-omni-30b | film-grab | 502 | 64.9% | 284 tok/image, 4× cheaper than Gemini |
-| llama-3.2-11b-vision | film-grab | 761 | 51.5% | 1623 in-tok/item, the priciest arm |
-| gemini-3.5-flash-lite | film-grab | 617 | 57.4% | **119 errors (19%)** — the incumbent default |
-| Qwen3.6-35B-A3B-FP8 | film-grab | 85 | 68.2% | real rows, run interrupted |
+| nemotron-3-nano-omni-30b | film-grab | 596 | 66.6% | 284 tok/image, 4× cheaper than Gemini |
+| gemini-3.5-flash-lite | film-grab | 631 | 56.1% | **133 errors (21%)** — the incumbent default |
 
 ## Not obtained
 
 | Model | Dataset | Why |
 |---|---|---|
+| llama-3.2-11b-vision | — | complete at 859: **51.7%**, last of every finished run, and the priciest arm at 1623 in-tok/item. Ruled out |
 | Qwen3.6-35B-A3B-FP8 | ShotBench | the 3572-row file was entirely `ImportError` from the pre-`kernels` run; resume treats an error row as done and skipped all of them. Quarantined to `.kernel-failure` |
 | gemma-4-26B-A4B, gemma-4-31B | ShotBench | instance released before stage 3/3 |
 | gemma ×2 | film-grab blind | refusal, not an answer — void |

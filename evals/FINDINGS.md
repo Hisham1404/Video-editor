@@ -108,14 +108,15 @@ Scored identically, collapsed to 5 classes (chance 20%), same 859 items:
 | **aslakey/shot_scale** | **1.2 GB** | **78.0%** |
 | gemma-4-26B-A4B | 51.6 GB | 78.0% |
 | Qwen3.5-9B | 19.3 GB | 72.8% |
+| Qwen3.6-35B-A3B-FP8 | 37.5 GB (MoE) | 72.3% |
 | Qwen3-VL-8B | 17.5 GB | 69.8% |
-| Qwen3.6-35B-A3B-FP8 | 37.5 GB | 68.2% *(85 items only)* |
 | ShotVL-3B | 7.5 GB | 66.7% |
+| nemotron-omni | API | 66.6% *(596 items, running)* |
 | ShotVL-7B | 16.6 GB | 65.7% |
-| nemotron-omni | API | 64.9% *(502 items)* |
 | Qwen3-VL-4B | 8.9 GB | 64.4% |
 | Qwen3-VL-2B | 4.3 GB | 61.8% |
-| llama-3.2-11b-vision | API | 51.5% *(761 items)* |
+| gemini-3.5-flash-lite | API | 56.1% *(631 items, 133 errors)* |
+| llama-3.2-11b-vision | API | 51.7% |
 
 gemma-4-31B is 3 points ahead of the classifier and **that gap is not
 significant**. McNemar on the paired items — the right test, because both models
@@ -129,11 +130,19 @@ wrong, so the Qwen3.5-9B row is n=849 and the rest n=859. Reproduce with
 | gemma-4-31B vs classifier | 100 | 74 | 3.59 | **0.058** | not significant |
 | gemma-4-26B-A4B vs classifier | 91 | 91 | 0.01 | 0.94 | dead heat |
 | classifier vs Qwen3.5-9B | 117 | 78 | 7.41 | **0.0065** | classifier wins |
+| classifier vs Qwen3.6-35B-A3B | 134 | 85 | 10.52 | **0.0012** | classifier wins |
 | gemma-4-31B vs gemma-4-26B-A4B | 77 | 51 | 4.88 | **0.027** | dense beats MoE |
+| Qwen3.5-9B vs Qwen3.6-35B-A3B | 66 | 57 | 0.52 | 0.47 | 19 GB ties 37.5 GB |
 
 So: a 1.2 GB classifier is **not beaten** by a 62.5 GB model at 52× its size,
 and it **does beat** every model that fits on consumer hardware. It runs 19.8
 images/sec, on CPU, emitting no tokens. The whole benchmark in 43 seconds.
+
+Size buys very little on this task. Qwen3.6-35B-A3B stores 35B parameters and
+activates ~3B per token; Qwen3.5-9B is dense at 9B. They are **tied** (p=0.47),
+and the classifier beats both — decisively against the MoE (p=0.0012). The only
+thing that reliably moved the needle was the jump to a 60 GB dense model, and
+that jump was worth 3 points that do not clear significance.
 
 **It still cannot replace the vision model.** It emits one label from five — no
 framing, no description, no camera motion. A prompt built from it alone reads
@@ -151,6 +160,7 @@ Classifier as primary tagger, each candidate as the cross-check, on the same
 | gemma-4-31B | 77.5% | 89.5% | 38.3% | **51.1** | 51.8% |
 | gemma-4-26B-A4B | 76.6% | 88.0% | 45.3% | 42.7 | 45.3% |
 | Qwen3.5-9B | 73.5% | 87.7% | 52.0% | 35.7 | 34.7% |
+| Qwen3.6-35B-A3B | 71.1% | 87.7% | 54.0% | 33.7 | 34.3% |
 | Qwen3-VL-8B | 68.6% | 87.3% | 57.8% | 29.5 | 31.9% |
 | Qwen3-VL-4B | 64.1% | 86.4% | 63.0% | 23.4 | 25.0% |
 | Qwen3-VL-2B | 57.7% | 88.3% | 63.9% | 24.4 | 25.6% |
@@ -247,7 +257,8 @@ like the input.** Nothing in sections 3–6 survives that objection.
 
 Also outstanding:
 
-- Qwen3.6-35B-A3B-FP8 has **85 of 859** film-grab items and no ShotBench result.
+- Qwen3.6-35B-A3B-FP8 has a complete film-grab result (sighted and blind) but
+  no ShotBench result — see the resume bug in §7.
 - Gemma has no ShotBench result and no valid blind control.
-- The gemini-lite and NVIDIA arms were still running when the GPUs were
-  released; their film-grab rows are partial and marked as such above.
+- gemini-lite and nemotron-omni were still running when the GPUs were released;
+  their film-grab rows are partial and marked as such above.
