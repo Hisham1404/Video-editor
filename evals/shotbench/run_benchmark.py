@@ -374,18 +374,27 @@ def extract_answer(text: str, options: dict[str, str]) -> str | None:
     text = text.strip()
     valid = set(options)
 
+    # The letter class comes from the options, never a hardcoded A-D. ShotBench
+    # is 4-option so A-D was invisible for 3572 items x 4 models; on the 7-option
+    # film-grab set it silently discarded every E, F and G as unparsed and scored
+    # them wrong. It hit the models that answer with a bare letter hardest --
+    # ShotVL-7B lost 51% of its answers that way and appeared to collapse -- so
+    # the bug read as a finding about model quality. It was not.
+    letters = "".join(sorted(valid))
+    cls = f"[{letters}{letters.lower()}]"
+
     # 1. The expected case: the whole reply is a letter.
-    m = re.match(r"^\s*\(?([A-Da-d])\)?\s*[\.\):,]?\s*$", text)
+    m = re.match(rf"^\s*\(?({cls})\)?\s*[\.\):,]?\s*$", text)
     if m and m.group(1).upper() in valid:
         return m.group(1).upper()
 
     # 2. "Answer: C" / "the answer is B" / "option D".
-    m = re.search(r"\b(?:answer|option)\b\W{0,12}([A-Da-d])\b", text, re.I)
+    m = re.search(rf"\b(?:answer|option)\b\W{{0,12}}({cls})\b", text, re.I)
     if m and m.group(1).upper() in valid:
         return m.group(1).upper()
 
     # 3. Leading "C) Close Up" or "C. Close Up".
-    m = re.match(r"^\s*\(?([A-Da-d])[\.\):,\-]\s+\S", text)
+    m = re.match(rf"^\s*\(?({cls})[\.\):,\-]\s+\S", text)
     if m and m.group(1).upper() in valid:
         return m.group(1).upper()
 
@@ -400,7 +409,7 @@ def extract_answer(text: str, options: dict[str, str]) -> str | None:
 
     # 5. Last resort: a standalone capital letter. Lowercase is excluded to
     #    avoid the article "a"; ambiguity ("A or B") scores as unparsed.
-    found = {c for c in re.findall(r"(?<![A-Za-z])([A-D])(?![A-Za-z])", text)}
+    found = {c for c in re.findall(rf"(?<![A-Za-z])([{letters}])(?![A-Za-z])", text)}
     found &= valid
     if len(found) == 1:
         return found.pop()
