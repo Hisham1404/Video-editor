@@ -20,5 +20,8 @@ opencv-python-headless>=4.10.0
 sentencepiece>=0.2.0
 protobuf>=4.25.0
 
+# --dataset filmshots only: the independent shot-scale set ships as parquet.
+pyarrow>=15.0.0
+
 # Gemini arm only; skip if running local models exclusively.
 google-genai>=1.0.0

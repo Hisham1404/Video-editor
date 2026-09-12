@@ -174,6 +174,110 @@ class Item:
     category: str
 
 
+#: An independent shot-scale set, used to check ShotBench's verdict against a
+#: source none of these models was tuned on. 2,919 frames from film-grab.com;
+#: the test split is exactly the 863 human hand-labelled rows, which is the only
+#: part we touch -- the rest carries DINOv2 and Claude Opus labels and would be
+#: measuring another model's opinion rather than ground truth.
+FILMSHOTS_DATASET = "szymonrucinski/types-of-film-shots"
+
+#: Parquet stores `label` as an index into this list, alphabetical.
+FILMSHOTS_CLASSES = ["ambiguous", "closeUp", "detail", "extremeLongShot",
+                     "fullShot", "longShot", "mediumCloseUp", "mediumShot"]
+
+#: Rendered into the prompt. `ambiguous` is deliberately absent: only 4 rows
+#: carry it and "the label is unclear" is not a shot size a model can name.
+FILMSHOTS_OPTIONS = {
+    "extremeLongShot": "Extreme long shot",
+    "longShot": "Long shot",
+    "fullShot": "Full shot",
+    "mediumShot": "Medium shot",
+    "mediumCloseUp": "Medium close-up",
+    "closeUp": "Close-up",
+    "detail": "Detail / insert (extreme close-up)",
+}
+
+FILMSHOTS_CATEGORY = "shot scale (film-grab)"
+
+
+def ensure_filmshots(data_dir: Path) -> list[tuple[str, str]]:
+    """Fetch the human-labelled split and write its frames to disk.
+
+    Returns (relative image path, class name) pairs. Images live in the parquet
+    as raw bytes, so they are materialised once and then read through the same
+    path as every other item.
+    """
+    from huggingface_hub import hf_hub_download
+    import pyarrow.parquet as pq
+
+    img_dir = data_dir / "filmshots"
+    index = data_dir / "filmshots_index.tsv"
+    if index.exists():
+        rows = [tuple(l.rstrip("\n").split("\t"))
+                for l in index.read_text(encoding="utf-8").splitlines()]
+        return [(a, b) for a, b in rows]
+
+    img_dir.mkdir(parents=True, exist_ok=True)
+    print(f"  downloading {FILMSHOTS_DATASET} (human split) ...")
+    path = hf_hub_download(FILMSHOTS_DATASET,
+                           "data/test-00000-of-00001.parquet",
+                           repo_type="dataset")
+    table = pq.read_table(path).to_pydict()
+
+    out: list[tuple[str, str]] = []
+    for i, (img, label, annot) in enumerate(zip(
+            table["image"], table["label"], table["annotator"])):
+        # Guard rather than assume: the split is all-human today, but a future
+        # re-upload adding AI rows must not silently become ground truth.
+        if annot != "human":
+            continue
+        name = FILMSHOTS_CLASSES[label]
+        if name not in FILMSHOTS_OPTIONS:
+            continue
+        rel = f"filmshots/{i:05d}.jpg"
+        (data_dir / rel).write_bytes(img["bytes"])
+        out.append((rel, name))
+
+    index.write_text("".join(f"{a}\t{b}\n" for a, b in out), encoding="utf-8")
+    print(f"  {len(out)} human-labelled frames")
+    return out
+
+
+def load_filmshots(data_dir: Path, limit: int | None) -> list["Item"]:
+    """Build MCQ items, shuffling the options per item.
+
+    The options are shuffled -- deterministically, seeded by the item index so
+    runs stay reproducible -- because a fixed order would hand free points to
+    whichever model happens to favour the letter the answer sits at. That is not
+    hypothetical here: on ShotBench, Qwen3-VL-8B chose A on 15.4% of its answers
+    while A was correct 24.0% of the time. A fixed layout would measure that bias
+    instead of measuring cinematography.
+    """
+    import random
+
+    pairs = ensure_filmshots(data_dir)
+    letters = "ABCDEFG"
+    keys = list(FILMSHOTS_OPTIONS)
+    items: list[Item] = []
+    for i, (rel, gold_name) in enumerate(pairs):
+        order = keys[:]
+        random.Random(i).shuffle(order)
+        options = {letters[j]: FILMSHOTS_OPTIONS[k] for j, k in enumerate(order)}
+        answer = letters[order.index(gold_name)]
+        items.append(Item(
+            index=i,
+            media_type="image",
+            paths=[rel],
+            question="What is the shot scale of this frame?",
+            options=options,
+            answer=answer,
+            category=FILMSHOTS_CATEGORY,
+        ))
+        if limit and len(items) >= limit:
+            break
+    return items
+
+
 def ensure_dataset(data_dir: Path, want_videos: bool,
                    want_media: bool = True) -> Path:
     """Download and extract ShotBench. images.tar is 2.2GB, videos.tar 1.2GB.
@@ -600,8 +704,9 @@ def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
     # The ablation writes to its own file. Sharing one would poison the real
     # results with rows the model answered blind, and the resume logic would
     # then skip items it never actually saw.
+    ds = "" if args.dataset == "shotbench" else f".{args.dataset}"
     suffix = ".noimage" if args.no_image else ""
-    out_path = out_dir / f"{spec.key}{suffix}.jsonl"
+    out_path = out_dir / f"{spec.key}{ds}{suffix}.jsonl"
     done = completed_indices(out_path)
     todo = [it for it in items if it.index not in done]
 
@@ -911,6 +1016,11 @@ def main() -> None:
     p.add_argument("--skip-video", action="store_true",
                    help="images only; skips the 1.2GB videos.tar download")
     p.add_argument("--video-frames", type=int, default=8)
+    p.add_argument("--dataset", default="shotbench",
+                   choices=["shotbench", "filmshots"],
+                   help="'filmshots' is the independent check: 863 human-labelled "
+                        "frames from film-grab.com, 7 options, chance 14.3%%. "
+                        "No model here was tuned on it")
     p.add_argument("--no-image", action="store_true",
                    help="contamination control: withhold the image and ask the "
                         "question anyway. Anything above chance came from the "
@@ -968,20 +1078,25 @@ def main() -> None:
         sys.exit(f"unknown model(s): {unknown}. choices: {list(MODELS)}")
 
     data_dir = Path(args.data_dir)
-    if args.tsv:
-        # A prepared subset: media is assumed already extracted under data_dir.
-        tsv = Path(args.tsv)
-        if not tsv.exists():
-            sys.exit(f"--tsv not found: {tsv}")
-        print(f"Using prepared item list: {tsv}")
+    if args.dataset == "filmshots":
+        print("Preparing film-grab shot-scale set (independent of ShotBench) ...")
+        items = load_filmshots(data_dir, args.limit)
+        print(f"  {len(items)} items, 7 options each (chance {100/7:.1f}%)")
     else:
-        print("Preparing ShotBench ...")
-        tsv = ensure_dataset(data_dir, want_videos=not args.skip_video,
-                             want_media=not args.no_image)
-    items = load_items(tsv, args.categories, args.limit, args.skip_video)
-    print(f"  {len(items)} items"
-          + (f" in {args.categories}" if args.categories else "")
-          + (" (images only)" if args.skip_video else ""))
+        if args.tsv:
+            # A prepared subset: media assumed already extracted under data_dir.
+            tsv = Path(args.tsv)
+            if not tsv.exists():
+                sys.exit(f"--tsv not found: {tsv}")
+            print(f"Using prepared item list: {tsv}")
+        else:
+            print("Preparing ShotBench ...")
+            tsv = ensure_dataset(data_dir, want_videos=not args.skip_video,
+                                 want_media=not args.no_image)
+        items = load_items(tsv, args.categories, args.limit, args.skip_video)
+        print(f"  {len(items)} items"
+              + (f" in {args.categories}" if args.categories else "")
+              + (" (images only)" if args.skip_video else ""))
     if not items:
         sys.exit("no items matched the filters")
 
