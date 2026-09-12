@@ -34,6 +34,68 @@ This harness produces them.
 **If `shotvl-7b` scores near 70.1 overall, the harness is calibrated.** If it
 doesn't, fix the harness before trusting any other row.
 
+## Models under test
+
+Four providers. Every hosted model was verified multimodal by **sending a real
+image and asking a question with a checkable answer** — "what colour is this?"
+on a blue square — never by reading a model card. That check mattered: four
+NVIDIA models accept an image payload and return an empty string, and
+`openai/gpt-oss-20b` accepts it on NVIDIA while Groq rejects the same request.
+
+### Local (rented GPU)
+
+| Key | HuggingFace id | Weights |
+|---|---|---|
+| `shotvl-3b` | `Vchitect/ShotVL-3B` | 7.5 GB |
+| `shotvl-7b` | `Vchitect/ShotVL-7B` | 16.6 GB |
+| `qwen3-vl-8b` | `Qwen/Qwen3-VL-8B-Instruct` | 17.5 GB |
+| `qwen3.5-9b` | `Qwen/Qwen3.5-9B` | 19.3 GB |
+| `qwen3-vl-2b` | `Qwen/Qwen3-VL-2B-Instruct` | 4.3 GB |
+| `qwen3-vl-4b` | `Qwen/Qwen3-VL-4B-Instruct` | 8.9 GB |
+| `qwen3.6-35b-a3b-fp8` | `Qwen/Qwen3.6-35B-A3B-FP8` | 37.5 GB |
+| `gemma-4-26b-a4b` | `google/gemma-4-26B-A4B-it` | 51.6 GB |
+| `gemma-4-31b` | `google/gemma-4-31B-it` | 62.5 GB |
+| `dinov2-shotscale` | `aslakey/shot_scale` | 1.2 GB |
+
+The Gemma pair needs an 80 GB card. They are also the only non-Qwen entries —
+every other model here, ShotVL's own base included, is Qwen-derived, so they are
+the one architecture-independent check in the set.
+
+`dinov2-shotscale` is not a VLM but a classification head. The task is mapping an
+image to one of seven labels, which does not need a model that can converse. It
+knows 5 classes rather than 7, so it is only comparable under `COLLAPSE_5`.
+
+### Hosted
+
+| Key | Provider id | Tokens/image |
+|---|---|---|
+| `gemini-lite` | `gemini-3.5-flash-lite` | 1,141 |
+| `gemini` | `gemini-3.8-flash` | 1,141 + thinking |
+| `nv-nemotron-omni` | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning` | **284** |
+| `nv-llama32-11b-vision` | `meta/llama-3.2-11b-vision-instruct` | 1,623 |
+
+### Dropped, and why
+
+| Model | Reason |
+|---|---|
+| **`qwen/qwen3.8-27b` (Groq)** | **Free tier caps at 200,000 tokens/day. This benchmark needs 859 × ~2,073 = 1.78M — nine days.** The cap is invisible: the API publishes only per-minute limits, and `x-ratelimit-remaining-tokens` reads a full 8,000 while the day is exhausted. Abandoned at 66/859 (53.0%) |
+| `qwen/qwen3.6-27b` (Groq) | Same daily cap, and it emits `<think>` |
+| `gemini-3.8-flash` | 6.7× the cost of flash-lite, 8× the latency, HTTP 503 on ~83% of calls |
+| `meta/llama-3.2-90b-vision-instruct` | Timed out at both 45s and 180s |
+| `ethz-mtc/shot_scale_classifier-resnet50` | Ships no `config.json` — a bare `.bin` with no `id2label`, so its output indices cannot be interpreted |
+| 55 of 82 NVIDIA catalogue models | HTTP 404 — advertised on build.nvidia.com, unreachable with the key |
+
+**The catalogue is not the account.** Anything picked from a docs page needs a
+live call before it goes in a plan.
+
+### The HuggingFace survey
+
+`shotvl`, `cinematic`, `cinematography`, `shot-scale`, `shot type`,
+`film-grammar`, `camera-angle`, `storyboard` — **ShotVL-3B and ShotVL-7B are the
+only cinematography-tuned VLMs on the Hub.** Everything else returned is image
+*generation* (SDXL/Flux/LTX LoRAs). The specialist field is fully tested; what
+remains is finding a generalist that is cheaper or better.
+
 ## Setup
 
 Target: RTX 4090 (24 GB) — every model in the default set fits at BF16.
