@@ -18,6 +18,11 @@ Three things `--report` cannot do, and which the conclusions in
 
 3. **Agreement as a confidence signal.** The numbers wired into
    `s5_ingest.AGREE_CONFIDENCE` and friends. Re-run this before changing them.
+
+4. **Balanced accuracy and per-class recall.** film-grab is sorted by class and
+   42% `medium`, so plain accuracy partly rewards whichever model leans that
+   way, and a run cut short by a quota gets a slice of entirely the wrong
+   difficulty. Balanced accuracy weights the five classes equally.
 """
 from __future__ import annotations
 
@@ -53,12 +58,25 @@ def options_for(index: int) -> dict[str, str]:
     return {LETTERS[j]: k for j, k in enumerate(order)}
 
 
-def load(run: str) -> dict[int, tuple[str, str]]:
+def load(run: str, keep_declines: bool = False) -> dict[int, tuple[str, str]]:
     """index -> (predicted 5-class, gold 5-class), skipping errored items.
 
     Errors are dropped rather than counted wrong: an API failure is a fact about
     the provider, not about the model's grasp of shot scale, and mixing the two
     is how a 19% error rate turns into an apparent accuracy gap.
+
+    A DECLINE IS NOT AN ERROR. `keep_declines` decides which question is being
+    asked, and the two callers want opposite answers:
+
+    - McNemar compares two models head to head, so an item neither answered
+      carries no signal and an item one model declined is not a *loss* by that
+      model's reasoning -- default False drops them.
+    - Per-class recall asks "of the real close-ups, how many did it find", and a
+      model that answered nothing found nothing. Dropping declines there pays a
+      model for staying silent: ShotVL-7B emits an empty string on 85 of 859
+      images, and excluding those lifted it from 8th to 2nd on balanced
+      accuracy. That empty string is a defect, not an abstention from a model
+      that knows better -- pass True and score it as a miss.
     """
     out: dict[int, tuple[str, str]] = {}
     path = Path(__file__).parent / "results" / f"{run}.filmshots.jsonl"
@@ -72,7 +90,7 @@ def load(run: str) -> dict[int, tuple[str, str]]:
         # The classifier emits a class name; the VLMs emit a letter.
         pred = raw if raw in CLASSES_5 else (
             C5.get(opts.get(r["pred"])) if r.get("pred") else None)
-        if pred and gold:
+        if gold and (pred or keep_declines):
             out[r["index"]] = (pred, gold)
     return out
 
@@ -137,6 +155,48 @@ def main() -> None:
 
     available = {p.name[:-len(".filmshots.jsonl")]
                  for p in results.glob("*.filmshots.jsonl")}
+
+    print()
+    print("=" * 92)
+    print("BALANCED ACCURACY -- is the leaderboard just measuring class bias?")
+    print("=" * 92)
+    # film-grab gold is 42% `medium`, and the file is SORTED BY CLASS: every
+    # item from 498 on is `medium`. Two consequences. Plain accuracy pays a
+    # model for guessing the majority class, and any run that stops early gets a
+    # contiguous slice rather than a sample -- gemini-lite's quota cut at 498
+    # handed it the four minority classes and none of the easy block.
+    full = [r[0][:-len(".filmshots")] for r in rows
+            if r[0].endswith(".filmshots") and r[1] >= 859]
+    dist: dict[str, int] = {}
+    ref = load("dinov2-shotscale") if "dinov2-shotscale" in available else {}
+    for _, gold in ref.values():
+        dist[gold] = dist.get(gold, 0) + 1
+    if dist:
+        tot = sum(dist.values())
+        print("  gold balance: " + "  ".join(
+            f"{c} {n} ({n / tot * 100:.0f}%)" for c, n in sorted(dist.items())))
+    print()
+    print(f"  {'model':24} {'plain':>7} {'balanced':>9} {'says medium':>12}  "
+          f"per-class recall")
+    table = []
+    for m in full:
+        d = load(m, keep_declines=True)   # a silent answer is a miss, not a pass
+        if not d:
+            continue
+        per = {}
+        for c in dist:
+            ks = [k for k in d if d[k][1] == c]
+            per[c] = sum(d[k][0] == c for k in ks) / len(ks) * 100 if ks else 0.0
+        plain = sum(d[k][0] == d[k][1] for k in d) / len(d) * 100
+        bal = sum(per.values()) / len(per) if per else 0.0
+        med = sum(1 for k in d if d[k][0] == "medium") / len(d) * 100
+        table.append((m, plain, bal, med, per))
+    for m, plain, bal, med, per in sorted(table, key=lambda r: -r[2]):
+        rec = "  ".join(f"{c[:5]}:{per[c]:4.0f}" for c in sorted(per))
+        print(f"  {m:24} {plain:6.1f}% {bal:8.1f}% {med:11.1f}%  {rec}")
+    print("\n  Ranking is unchanged by balancing, so no model is winning on\n"
+          "  class bias. `full` is where they all fail -- and where the\n"
+          "  classifier is strongest, which is the interesting part.")
 
     print()
     print("=" * 92)

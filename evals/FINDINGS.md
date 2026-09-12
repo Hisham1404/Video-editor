@@ -123,6 +123,75 @@ Scored over items the provider **delivered**. An HTTP 429 is a fact about a
 billing quota, not about a model's eyesight, so it is out of the denominator —
 see §7, where dividing by it produced a sixth fake result.
 
+### film-grab is sorted by class, and that distorts every partial run
+
+Gold is `close_up` 14%, `extreme_close_up` 7%, `full` 10%, **`medium` 42%**,
+`wide` 27% — and the file is **ordered**, not shuffled: every item from index
+498 onward is `medium`. A run that stops early therefore gets a contiguous
+slice, not a sample.
+
+gemini-lite's quota cut at exactly 498 handed it the four minority classes and
+none of that block. The classifier scores **71.9%** on gemini's 498 and
+**86.4%** on the remaining 361 — so gemini answered a slice **14.5 points
+harder** than the set average, and comparing its 71.1% to everyone else's
+full-set number understates it badly. Like for like on the same 498:
+
+| Model | on gemini's 498 |
+|---|---|
+| gemma-4-31B | 78.1% |
+| gemma-4-26B-A4B | 74.7% |
+| **aslakey/shot_scale** | **71.9%** |
+| **gemini-3.5-flash-lite** | **71.1%** |
+| ShotVL-3B | 70.9% |
+| Qwen3.6-35B-A3B | 69.7% |
+| Qwen3.5-9B | 65.9% |
+| nemotron-omni | 64.7% |
+
+**gemini-3.5-flash-lite is 4th of 13 and level with the classifier.** It is a
+real contender, not an also-ran. The same correction applies to every partial
+run in the table above — read them as harder-than-average slices.
+
+### The ranking is not class bias
+
+With 42% of gold in one class, plain accuracy partly pays a model for leaning
+that way. Balanced accuracy — the mean of the five per-class recalls — says the
+same thing:
+
+| Model | plain | balanced | predicts `medium` |
+|---|---|---|---|
+| gemma-4-31B | 81.0% | **76.9%** | 40.3% |
+| gemma-4-26B-A4B | 78.0% | 74.0% | 40.6% |
+| **aslakey/shot_scale** | 78.0% | **73.2%** | 42.1% |
+| ShotVL-3B | 66.7% | 69.0% | 28.1% |
+| Qwen3.6-35B-A3B | 72.3% | 67.0% | 39.7% |
+| Qwen3.5-9B | 72.8% | 65.9% | 46.9% |
+
+Same top three, same order. The leaders predict `medium` at ~40% against a 42%
+base rate — they are calibrated, not guessing the majority.
+
+**`fullShot` is where every model fails**, and it is the clearest single result
+in the whole comparison:
+
+| | `full` recall |
+|---|---|
+| **aslakey/shot_scale** | **77%** |
+| gemma-4-31B | 67% |
+| gemma-4-26B-A4B | 43% |
+| Qwen3-VL-8B | 33% |
+| Qwen3.6-35B-A3B | 27% |
+| Qwen3.5-9B | 20% |
+| Qwen3-VL-4B | **11%** |
+
+A full shot is a whole body head to toe — the single most common framing in a
+reel. The VLMs read it as `medium` or `wide`; the classifier does not. That one
+class is most of the classifier's margin, and it is the framing the app needs
+most.
+
+The mirror image: the classifier is worst at `extreme_close_up` (50%) where
+ShotVL-3B reaches 96%. Routing that class to ShotVL was measured and gains
+**+0.2 points on 35 items** — noise, and the rule was chosen on this same set,
+so the honest expectation is zero. Recorded so it is not tried twice.
+
 gemma-4-31B is 3 points ahead of the classifier and **that gap is not
 significant**. McNemar on the paired items — the right test, because both models
 answered the same questions, so a two-proportion test would overstate it. Items
