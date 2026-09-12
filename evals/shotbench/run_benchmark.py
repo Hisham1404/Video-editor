@@ -174,8 +174,14 @@ class Item:
     category: str
 
 
-def ensure_dataset(data_dir: Path, want_videos: bool) -> Path:
-    """Download and extract ShotBench. images.tar is 2.2GB, videos.tar 1.2GB."""
+def ensure_dataset(data_dir: Path, want_videos: bool,
+                   want_media: bool = True) -> Path:
+    """Download and extract ShotBench. images.tar is 2.2GB, videos.tar 1.2GB.
+
+    `want_media=False` fetches only the TSV. The --no-image ablation never opens
+    a single frame, so pulling 3.4GB of media for it would be 3.4GB of rented
+    bandwidth and minutes of billed time spent on files the run cannot touch.
+    """
     from huggingface_hub import hf_hub_download
 
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -184,6 +190,10 @@ def ensure_dataset(data_dir: Path, want_videos: bool) -> Path:
         print("  downloading test.tsv ...")
         src = hf_hub_download(HF_DATASET, "test.tsv", repo_type="dataset")
         tsv.write_bytes(Path(src).read_bytes())
+
+    if not want_media:
+        print("  --no-image: skipping images.tar and videos.tar (3.4GB unused)")
+        return tsv
 
     wanted = [("images.tar", "image")]
     if want_videos:
@@ -966,7 +976,8 @@ def main() -> None:
         print(f"Using prepared item list: {tsv}")
     else:
         print("Preparing ShotBench ...")
-        tsv = ensure_dataset(data_dir, want_videos=not args.skip_video)
+        tsv = ensure_dataset(data_dir, want_videos=not args.skip_video,
+                             want_media=not args.no_image)
     items = load_items(tsv, args.categories, args.limit, args.skip_video)
     print(f"  {len(items)} items"
           + (f" in {args.categories}" if args.categories else "")
