@@ -1,0 +1,5 @@
+
+# Shell scripts run on Linux boxes. Windows CRLF makes bash fail with
+# "$'\r': command not found" and "syntax error near unexpected token $'do\r'",
+# which reads like a syntax bug rather than an encoding one. Force LF.
+*.sh text eol=lf

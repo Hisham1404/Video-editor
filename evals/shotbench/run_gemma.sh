@@ -21,10 +21,16 @@ echo "=== START $(date -u +%FT%TZ) ==="
 nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader
 echo "disk: $(df -h / | tail -1 | awk '{print $4}') free  (114GB of weights incoming)"
 
-# Fail here rather than 40 minutes into a download that cannot complete.
-FREE_GB=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
+# Check the disk the weights actually land on, not /. setup_box.sh points
+# HF_HOME at the largest writable mount, and on the A100 80GB image that is
+# /ephemeral with 700GB while / has only 82GB. Checking / would abort a run that
+# would have been fine.
+WEIGHT_DIR="${HF_HOME:-$HOME/.cache/huggingface}"
+mkdir -p "$WEIGHT_DIR"
+FREE_GB=$(df --output=avail -BG "$WEIGHT_DIR" | tail -1 | tr -dc '0-9')
+echo "weights -> $WEIGHT_DIR (${FREE_GB}GB free)"
 if [ "$FREE_GB" -lt 160 ]; then
-  echo "ABORT: ${FREE_GB}GB free, need 160GB+ (114GB weights + dataset + cache)"
+  echo "ABORT: ${FREE_GB}GB free at $WEIGHT_DIR, need 160GB+ (114GB weights + dataset)"
   exit 1
 fi
 VRAM=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -1)
