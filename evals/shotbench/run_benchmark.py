@@ -587,7 +587,11 @@ def completed_indices(path: Path) -> set[int]:
 
 def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
               out_dir: Path, args) -> None:
-    out_path = out_dir / f"{spec.key}.jsonl"
+    # The ablation writes to its own file. Sharing one would poison the real
+    # results with rows the model answered blind, and the resume logic would
+    # then skip items it never actually saw.
+    suffix = ".noimage" if args.no_image else ""
+    out_path = out_dir / f"{spec.key}{suffix}.jsonl"
     done = completed_indices(out_path)
     todo = [it for it in items if it.index not in done]
 
@@ -623,7 +627,20 @@ def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
     with out_path.open("a", encoding="utf-8") as fh:
         for n, item in enumerate(todo, 1):
             try:
-                images = load_media(item, data_dir, args.video_frames)
+                # --no-image is the contamination control. The question and its
+                # options go to the model with the picture withheld, so anything
+                # it scores above chance came from the text, not from seeing.
+                #
+                # This matters because ShotVL was fine-tuned on ShotQA -- 70k QA
+                # pairs built by the same team, same eight dimensions, same
+                # taxonomy, same multiple-choice shape as this benchmark. The
+                # generalists have never seen that format. A raw score gap
+                # therefore measures cinematography skill and exam familiarity
+                # mixed together, and only this ablation separates them.
+                # RefineShot (arXiv 2510.02423) reports option leakage in
+                # ShotBench; this measures how much of it each model exploits.
+                images = [] if args.no_image else load_media(
+                    item, data_dir, args.video_frames)
                 prompt = build_prompt(item)
                 t0 = time.time()
                 text, meta = backend.generate(images, prompt)
@@ -692,6 +709,64 @@ def preflight_vram(spec: ModelSpec) -> None:
 # --------------------------------------------------------------------------
 # Reporting
 # --------------------------------------------------------------------------
+
+#: ShotBench items are 4-option MCQ, so a model that cannot see should land here.
+CHANCE = 25.0
+
+
+def _report_leakage(table: dict[str, dict[str, Any]], width: int) -> None:
+    """Pair each model with its --no-image run and show what sight was worth.
+
+    Reading the columns:
+
+      blind      what the model scores with the picture withheld. At CHANCE it
+                 is genuinely guessing. Above it, the question leaks its own
+                 answer -- through option wording, priors over which shot sizes
+                 are common, or memorised items.
+      sighted    the normal score.
+      sight      sighted - blind. **This is the honest measure of vision.**
+                 A model that scores 83 sighted and 55 blind contributes 28
+                 points of actual looking; one that scores 70 sighted and 30
+                 blind contributes 40.
+
+    Why it matters here: ShotVL was fine-tuned on ShotQA, built by the same team
+    in the same format as this benchmark, while the generalists have never seen
+    that format. Raw scores mix skill with exam familiarity. `sight` does not --
+    it is each model measured against itself, so format advantage cancels out.
+    """
+    pairs = [(k, f"{k}.noimage") for k in table
+             if not k.endswith(".noimage") and f"{k}.noimage" in table]
+    if not pairs:
+        return
+
+    def overall(key: str) -> tuple[float, int]:
+        vals = [v for lst in table[key]["by_cat"].values() for v in lst]
+        return (100 * sum(vals) / len(vals), len(vals)) if vals else (0.0, 0)
+
+    print("\n" + "=" * 100)
+    print("CONTAMINATION CONTROL - what the model scores without the image")
+    print("=" * 100)
+    print("  " + "model".ljust(width) + "blind".rjust(9) + "sighted".rjust(10)
+          + "sight".rjust(9) + "   verdict")
+    for base, blind_key in sorted(pairs):
+        b, _ = overall(blind_key)
+        s, _ = overall(base)
+        if b >= s:
+            verdict = "BROKEN - sight does not help at all"
+        elif b > CHANCE + 20:
+            verdict = "severe leakage - answerable from text alone"
+        elif b > CHANCE + 10:
+            verdict = "notable leakage"
+        elif b > CHANCE + 5:
+            verdict = "mild leakage"
+        else:
+            verdict = "clean - near chance without the image"
+        print("  " + base.ljust(width) + f"{b:8.1f}%" + f"{s:9.1f}%"
+              + f"{s - b:+8.1f}" + f"   {verdict}")
+    print(f"\n  chance is {CHANCE:.0f}% (4 options). Rank models by 'sight', not by")
+    print("  'sighted' -- sight is each model measured against itself, so an")
+    print("  advantage from recognising the question format cancels out.")
+
 
 def report(out_dir: Path) -> None:
     files = sorted(out_dir.glob("*.jsonl"))
@@ -778,6 +853,8 @@ def report(out_dir: Path) -> None:
     for acc, key, n in sorted(rows, reverse=True):
         print(f"  {key.ljust(width)} {acc:6.1f}%   (n={n})")
 
+    _report_leakage(table, width)
+
     print("\n" + "=" * 100)
     print("OPERATIONS")
     print("=" * 100)
@@ -824,6 +901,10 @@ def main() -> None:
     p.add_argument("--skip-video", action="store_true",
                    help="images only; skips the 1.2GB videos.tar download")
     p.add_argument("--video-frames", type=int, default=8)
+    p.add_argument("--no-image", action="store_true",
+                   help="contamination control: withhold the image and ask the "
+                        "question anyway. Anything above chance came from the "
+                        "text. Writes to <model>.noimage.jsonl")
     p.add_argument("--max-new-tokens", type=int, default=128,
                    help="local HF models only. Was 16 on the assumption that "
                         "local models don't think; Qwen3.5-9B does, and scored "
