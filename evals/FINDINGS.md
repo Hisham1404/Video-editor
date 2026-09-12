@@ -110,7 +110,7 @@ Scored identically, collapsed to 5 classes (chance 20%), same 859 items:
 | **gemini-3.5-flash-lite** | **API** | **77.8%** |
 | Qwen3.5-9B | 19.3 GB | 72.8% |
 | Qwen3.6-35B-A3B-FP8 | 37.5 GB (MoE) | 72.3% |
-| nemotron-omni | API | 71.3% *(857 items)* |
+| nemotron-omni | API | 71.2% |
 | Qwen3-VL-8B | 17.5 GB | 69.8% |
 | ShotVL-3B | 7.5 GB | 66.7% |
 | ShotVL-7B | 16.6 GB | 65.7% |
@@ -380,5 +380,5 @@ Also outstanding:
 - Qwen3.6-35B-A3B-FP8 has a complete film-grab result (sighted and blind) but
   no ShotBench result — see the resume bug in §7.
 - Gemma has no ShotBench result and no valid blind control.
-- gemini-lite and nemotron-omni were still running when the GPUs were released;
-  their film-grab rows are partial and marked as such above.
+- **film-grab is complete for 12 of the 15 models**, all 859 items each. Only
+  Groq's arm is partial (70 items), and it was abandoned on cost, not accuracy.
