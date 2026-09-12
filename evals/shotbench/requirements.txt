@@ -1,6 +1,16 @@
-# Install torch FIRST, matched to the instance's CUDA version, e.g.:
-#   pip install torch --index-url https://download.pytorch.org/whl/cu124
-# Installing it via this file can pull a CPU-only or mismatched build.
+# Install torch AND torchvision FIRST, matched to the instance's CUDA version:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+# Installing them via this file can pull a CPU-only or mismatched build.
+#
+# torchvision is not optional and is not a torch dependency. transformers'
+# Qwen2VLVideoProcessor imports it at model-load time, so without it every
+# Qwen-derived model here -- which is all four of them -- dies with an
+# ImportError *after* the weights have downloaded. Measured on an L40S:
+#   shotvl-3b FAILED: ImportError: Qwen2VLVideoProcessor requires the
+#   Torchvision library but it was not found in your environment.
+#
+# Pick the index to match the driver, not this comment. On CUDA 13 (driver
+# 580.x) the cu130 index gives torch 2.14.0+cu130 / torchvision 0.29.0+cu130.
 
 transformers>=4.57.0
 accelerate>=1.0.0

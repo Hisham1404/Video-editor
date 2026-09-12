@@ -166,7 +166,7 @@ Ten minutes of downloading. Detach it, then poll:
 ```bash
 ssh shadeform 'cd ~/ve/evals/shotbench && python3 -m venv .venv && \
   tmux new -d -s setup "source .venv/bin/activate && \
-  pip install torch --index-url https://download.pytorch.org/whl/cu124 && \
+  pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130 && \
   pip install -r requirements.txt > ~/setup.log 2>&1"'
 ```
 
@@ -263,7 +263,8 @@ reassigned to someone else.
 | `CUDA out of memory` on the 9B | 24 GB card, 8 frames | `--video-frames 4`, or provision 48 GB |
 | `No space left on device` mid-download | Root volume under 150 GB | Nothing to do but reprovision — check in Step 3 |
 | Run dies when the laptop sleeps | Command ran in the foreground | It must be inside `tmux` (Step 8) |
-| `torch.cuda.is_available()` is False | Wheel/driver mismatch | Reinstall torch from the `cu128` index — **not** a reprovision |
+| `torch.cuda.is_available()` is False | Wheel/driver mismatch | Reinstall torch from the `cu130` index — **not** a reprovision |
+| `Qwen2VLVideoProcessor requires the Torchvision library` | `torchvision` missing — it is not a torch dependency | `pip install torchvision --index-url .../cu130`. Fires *after* the weights download, which is why Step 7 exists |
 | Numbers far below published averages | `extract_answer` mis-parsing, not model quality | Inspect raw `response` fields in the JSONL before drawing conclusions |
 
 ## Do not
