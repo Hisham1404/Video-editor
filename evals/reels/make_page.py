@@ -213,6 +213,16 @@ def main() -> int:
             if pool:
                 mixed.append(pool.pop(0))
 
+    # When every frame is its own source -- the Pexels set, one frame per video
+    # -- the interleave above is a no-op and the manifest order survives, which
+    # means all fifty `wide` results arrive in a block. Fifty of one framing in
+    # a row is the same anchoring trap from the other direction, so shuffle.
+    # Seeded, so regenerating the page does not reshuffle a half-finished job
+    # and strand the labels already collected.
+    import random as _r
+    if len(by_src) == len(frames):
+        _r.Random(20260913).shuffle(mixed)
+
     html = (PAGE
             .replace("__FRAMES__", json.dumps(mixed))
             .replace("__DIR__", json.dumps(fdir.name))

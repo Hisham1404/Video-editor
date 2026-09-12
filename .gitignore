@@ -53,3 +53,5 @@ evals/reels/frames/*.jpg
 evals/reels/labeller.html
 evals/reels/frames_shots/
 evals/reels/sheets/
+evals/reels/frames_pexels/*.jpg
+evals/reels/label_pexels.html
