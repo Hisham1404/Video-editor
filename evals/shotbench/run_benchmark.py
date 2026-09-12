@@ -295,6 +295,52 @@ def load_filmshots(data_dir: Path, limit: int | None) -> list["Item"]:
     return items
 
 
+def load_reels(tsv: Path, limit: int | None) -> list["Item"]:
+    """Your own labelled reel frames, from evals/reels/label.py.
+
+    The only test on the app's actual input distribution. ShotBench and
+    film-grab are both landscape feature film; the product ingests vertical
+    phone video, and a model can be good at one and poor at the other.
+
+    Same 7 classes and the same seeded option shuffle as the film-grab loader,
+    so the two numbers are directly comparable -- that comparison is the whole
+    point, since it measures how far a score earned on cinema carries over.
+    """
+    import random
+
+    if not tsv.exists():
+        sys.exit(f"--reels-tsv not found: {tsv}\n"
+                 f"Build it first:  python evals/reels/label.py extract ... "
+                 f"then label, then export")
+    root = tsv.parent
+    letters, keys = "ABCDEFG", list(FILMSHOTS_OPTIONS)
+    items: list[Item] = []
+    for i, line in enumerate(tsv.read_text(encoding="utf-8").splitlines()):
+        if not line.strip():
+            continue
+        rel, _, gold_name = line.partition("\t")
+        gold_name = gold_name.strip()
+        if gold_name not in FILMSHOTS_OPTIONS:
+            sys.exit(f"{tsv}:{i+1}: unknown class {gold_name!r}. "
+                     f"Expected one of {list(FILMSHOTS_OPTIONS)}")
+        if not (root / rel).exists():
+            sys.exit(f"{tsv}:{i+1}: missing frame {root / rel}")
+        order = keys[:]
+        random.Random(i).shuffle(order)
+        items.append(Item(
+            index=i,
+            media_type="image",
+            paths=[rel],
+            question="What is the shot scale of this frame?",
+            options={letters[j]: FILMSHOTS_OPTIONS[k] for j, k in enumerate(order)},
+            answer=letters[order.index(gold_name)],
+            category="shot scale (own reels)",
+        ))
+        if limit and len(items) >= limit:
+            break
+    return items
+
+
 def ensure_dataset(data_dir: Path, want_videos: bool,
                    want_media: bool = True) -> Path:
     """Download and extract ShotBench. images.tar is 2.2GB, videos.tar 1.2GB.
@@ -1302,8 +1348,11 @@ def main() -> None:
     p.add_argument("--skip-video", action="store_true",
                    help="images only; skips the 1.2GB videos.tar download")
     p.add_argument("--video-frames", type=int, default=8)
+    p.add_argument("--reels-tsv", default="../reels/reels_test.tsv",
+                   help="--dataset reels: path to the TSV from "
+                        "evals/reels/label.py export")
     p.add_argument("--dataset", default="shotbench",
-                   choices=["shotbench", "filmshots"],
+                   choices=["shotbench", "filmshots", "reels"],
                    help="'filmshots' is the independent check: 863 human-labelled "
                         "frames from film-grab.com, 7 options, chance 14.3%%. "
                         "No model here was tuned on it")
@@ -1364,7 +1413,11 @@ def main() -> None:
         sys.exit(f"unknown model(s): {unknown}. choices: {list(MODELS)}")
 
     data_dir = Path(args.data_dir)
-    if args.dataset == "filmshots":
+    if args.dataset == "reels":
+        print("Preparing your own labelled reel frames ...")
+        items = load_reels(Path(args.reels_tsv), args.limit)
+        print(f"  {len(items)} items, 7 options each (chance {100/7:.1f}%)")
+    elif args.dataset == "filmshots":
         print("Preparing film-grab shot-scale set (independent of ShotBench) ...")
         items = load_filmshots(data_dir, args.limit)
         print(f"  {len(items)} items, 7 options each (chance {100/7:.1f}%)")
