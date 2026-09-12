@@ -70,6 +70,8 @@ source .venv/bin/activate
 pip install -q --upgrade pip
 pip install -q torch torchvision --index-url "https://download.pytorch.org/whl/${TORCH_IDX}"
 pip install -q -r requirements.txt
+# FP8 builds need this at model-load time or they score 0.0% and look broken.
+pip install -q "kernels>=0.16.0,<0.17.0"
 python -c "import torch,torchvision; print('torch',torch.__version__,'| tv',torchvision.__version__,'| cuda',torch.cuda.is_available(),'|',torch.cuda.get_device_name(0))"
 
 echo

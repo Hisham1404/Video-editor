@@ -25,3 +25,9 @@ pyarrow>=15.0.0
 
 # Gemini arm only; skip if running local models exclusively.
 google-genai>=1.0.0
+
+# FP8 checkpoints only. Qwen3.6-35B-A3B-FP8 raises at model-load time without
+# it -- "finegrained-fp8 kernel unavailable" -- and the harness records that as
+# an error per item, so the model scores 0.0% across all 859 and looks broken.
+# The version range is narrow and enforced by transformers.
+kernels>=0.16.0,<0.17.0
