@@ -780,6 +780,10 @@ def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
                     "raw": text[:200],
                     "correct": bool(pred and pred == item.answer),
                     "unparsed": pred is None,
+                    # Recorded so the report can compute chance per dataset.
+                    # ShotBench is 4-option, film-grab 7; a hardcoded 25% called
+                    # a below-chance 6.1% "near chance" on the latter.
+                    "n_options": len(item.options),
                     "latency_s": round(latency, 3),
                     **meta,
                 }
@@ -834,7 +838,8 @@ def preflight_vram(spec: ModelSpec) -> None:
 # Reporting
 # --------------------------------------------------------------------------
 
-#: ShotBench items are 4-option MCQ, so a model that cannot see should land here.
+#: Fallback only, for rows written before n_options was recorded. ShotBench is
+#: 4-option; anything else must report its own chance level or the verdicts lie.
 CHANCE = 25.0
 
 
@@ -870,26 +875,30 @@ def _report_leakage(table: dict[str, dict[str, Any]], width: int) -> None:
     print("\n" + "=" * 100)
     print("CONTAMINATION CONTROL - what the model scores without the image")
     print("=" * 100)
-    print("  " + "model".ljust(width) + "blind".rjust(9) + "sighted".rjust(10)
-          + "sight".rjust(9) + "   verdict")
+    print("  " + "model".ljust(width) + "blind".rjust(9) + "chance".rjust(9)
+          + "sighted".rjust(10) + "sight".rjust(9) + "   verdict")
     for base, blind_key in sorted(pairs):
         b, _ = overall(blind_key)
         s, _ = overall(base)
+        chance = table[blind_key].get("chance") or CHANCE
         if b >= s:
             verdict = "BROKEN - sight does not help at all"
-        elif b > CHANCE + 20:
+        elif b > chance + 20:
             verdict = "severe leakage - answerable from text alone"
-        elif b > CHANCE + 10:
+        elif b > chance + 10:
             verdict = "notable leakage"
-        elif b > CHANCE + 5:
+        elif b > chance + 5:
             verdict = "mild leakage"
+        elif b < chance - 3:
+            verdict = "clean - below chance blind"
         else:
-            verdict = "clean - near chance without the image"
-        print("  " + base.ljust(width) + f"{b:8.1f}%" + f"{s:9.1f}%"
-              + f"{s - b:+8.1f}" + f"   {verdict}")
-    print(f"\n  chance is {CHANCE:.0f}% (4 options). Rank models by 'sight', not by")
-    print("  'sighted' -- sight is each model measured against itself, so an")
-    print("  advantage from recognising the question format cancels out.")
+            verdict = "clean - at chance without the image"
+        print("  " + base.ljust(width) + f"{b:8.1f}%" + f"{chance:8.1f}%"
+              + f"{s:9.1f}%" + f"{s - b:+8.1f}" + f"   {verdict}")
+    print("\n  Rank models by 'sight', not by 'sighted' -- sight is each model")
+    print("  measured against itself, so an advantage from recognising the")
+    print("  question format cancels out. Chance is per-dataset: ShotBench is")
+    print("  4-option, the film-grab set 7.")
 
 
 def report(out_dir: Path) -> None:
@@ -908,6 +917,7 @@ def report(out_dir: Path) -> None:
         unparsed = errs = 0
         tin = tout = tthink = 0
         model_id = ""
+        opt_counts: list[int] = []
         with path.open(encoding="utf-8") as fh:
             for line in fh:
                 try:
@@ -923,6 +933,8 @@ def report(out_dir: Path) -> None:
                     lat.append(r["latency_s"])
                 if r.get("unparsed"):
                     unparsed += 1
+                if r.get("n_options"):
+                    opt_counts.append(r["n_options"])
                 tin += r.get("in_tokens", 0)
                 # Thinking bills as output; fold it in so cost is not understated.
                 tout += r.get("out_tokens", 0) + r.get("think_tokens", 0)
@@ -933,6 +945,10 @@ def report(out_dir: Path) -> None:
             "by_cat": by_cat, "lat": lat, "unparsed": unparsed,
             "errors": errs, "in": tin, "out": tout, "think": tthink,
             "model_id": model_id,
+            # Chance depends on how many options each item offered, so it is
+            # read from the data rather than assumed.
+            "chance": (100.0 / (sum(opt_counts) / len(opt_counts))
+                       if opt_counts else None),
         }
 
     ordered = sorted(categories)

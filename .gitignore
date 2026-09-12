@@ -37,3 +37,6 @@ PROJECT_DECISION_LOG.md
 
 # graphify code graph — generated, regenerate with: graphify update .
 graphify-out/
+
+# Pre-parser-fix result snapshots, kept locally as evidence, not worth versioning
+evals/shotbench/results/*.prefix-backup
