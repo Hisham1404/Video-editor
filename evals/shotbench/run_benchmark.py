@@ -125,6 +125,38 @@ MODELS: dict[str, ModelSpec] = {
         "qwen3.5-9b", "hf", "Qwen/Qwen3.5-9B",
         "Modern generalist (2026-03). The real test of specialist vs. base progress.", 19.3,
     ),
+    # --- cheaper/newer generalists, added after surveying HuggingFace --------
+    # The survey's main result was negative and worth recording: ShotVL-3B and
+    # ShotVL-7B are the ONLY cinematography-tuned VLMs on the Hub. Searches for
+    # cinematic / cinematography / shot-scale / shot-type / camera-angle return
+    # image *generation* LoRAs (SDXL, Flux, LTX), not understanding models. The
+    # specialist field is already fully tested; what is left is finding a
+    # generalist that is cheaper or better.
+    "qwen3-vl-2b": ModelSpec(
+        "qwen3-vl-2b", "hf", "Qwen/Qwen3-VL-2B-Instruct",
+        "Quarter the size of the 8B already tested. If it lands within a point "
+        "or two, the hosting economics change completely.", 4.3,
+    ),
+    "qwen3-vl-4b": ModelSpec(
+        "qwen3-vl-4b", "hf", "Qwen/Qwen3-VL-4B-Instruct",
+        "Half the 8B. The middle point that says whether accuracy here scales "
+        "with parameters at all.", 8.9,
+    ),
+    "qwen3.6-35b-a3b-fp8": ModelSpec(
+        "qwen3.6-35b-a3b-fp8", "hf", "Qwen/Qwen3.6-35B-A3B-FP8",
+        "Mixture-of-experts: ~3B parameters active per token against 35B of "
+        "stored knowledge. FP8 because bf16 is 71.9GB and will not fit a 48GB "
+        "card -- this build is 37.5GB, which fits with roughly 10GB spare.", 37.5,
+    ),
+    # google/gemma-4-31B-it (62.5GB) and gemma-4-26B-A4B-it (51.6GB) are both
+    # too large for a 48GB L40S in bf16. They need an 80GB instance or a
+    # community quantisation; deliberately not listed rather than listed and
+    # failing preflight on the night.
+    "dinov2-shotscale": ModelSpec(
+        "dinov2-shotscale", "classifier", "aslakey/shot_scale",
+        "Not a VLM: a 1.2GB DINOv2 classification head. Knows 5 classes, not "
+        "7, so it is only comparable under --collapse5.", 1.2,
+    ),
     "nv-nemotron-omni": ModelSpec(
         "nv-nemotron-omni", "nvidia", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
         "Cheapest per image measured: 284 input tokens vs Gemini's 1141 and "
@@ -721,6 +753,85 @@ class GeminiBackend:
         pass
 
 
+#: aslakey/shot_scale predicts 5 classes; this benchmark uses 7. Mapping ours
+#: onto theirs is the only honest direction -- theirs cannot be split, ours can
+#: be merged. Both `extremeLongShot` and `longShot` become `wide`, and both
+#: `mediumShot` and `mediumCloseUp` become `medium`, so scoring happens in the
+#: coarser 5-class space for every model or the comparison is rigged.
+COLLAPSE_5 = {
+    "extremeLongShot": "wide",
+    "longShot": "wide",
+    "fullShot": "full",
+    "mediumShot": "medium",
+    "mediumCloseUp": "medium",
+    "closeUp": "close_up",
+    "detail": "extreme_close_up",
+}
+
+
+class ClassifierBackend:
+    """A plain image classifier, not a VLM.
+
+    Worth measuring because it is a different answer to the problem. The task is
+    mapping an image to one of seven labels; it does not need a model that can
+    converse. aslakey/shot_scale is a 1.2GB DINOv2 head against 4.3-37.5GB for
+    the VLMs here, runs on CPU, and emits no tokens at all -- so if it is
+    accurate it wins on cost by two orders of magnitude.
+
+    Evidence the approach works: the film-grab dataset this harness already uses
+    was itself labelled by a DINOv2 classifier, with Claude Opus reviewing the
+    low-confidence cases.
+
+    The caveat is the taxonomy. It knows 5 classes and this benchmark asks 7, so
+    it can never distinguish `extremeLongShot` from `longShot`. Scoring it
+    against the 7-class gold would therefore measure the mismatch, not the
+    model. `generate` returns the class name; `--collapse5` in the report maps
+    gold and prediction into the 5-class space for every model alike.
+
+    ethz-mtc/shot_scale_classifier-resnet50 looked like a second candidate at
+    0.1GB but ships no config.json -- a bare .bin with no id2label, so its
+    output indices mean nothing without guessing. Not usable.
+    """
+
+    def __init__(self, model_id: str):
+        import torch
+        from transformers import AutoImageProcessor, AutoModelForImageClassification
+
+        self.torch = torch
+        print(f"  loading classifier {model_id} ...")
+        self.processor = AutoImageProcessor.from_pretrained(model_id)
+        self.model = AutoModelForImageClassification.from_pretrained(model_id)
+        self.model.eval()
+        if torch.cuda.is_available():
+            self.model.to("cuda")
+        self.id2label = self.model.config.id2label
+        print(f"  classes: {list(self.id2label.values())}")
+        self.in_tokens = self.out_tokens = self.think_tokens = self.truncated = 0
+
+    def generate(self, images: list[Any], prompt: str) -> tuple[str, dict]:
+        """Ignores the prompt -- a classifier has no prompt. Returns its raw
+        class name, which only the collapsed scoring path can interpret."""
+        if not images:
+            # The --no-image control is meaningless here: with no image there is
+            # nothing to classify, and returning a constant would fake a score.
+            return "", {}
+        inputs = self.processor(images=images[0], return_tensors="pt")
+        if self.torch.cuda.is_available():
+            inputs = {k: v.to("cuda") for k, v in inputs.items()}
+        with self.torch.inference_mode():
+            logits = self.model(**inputs).logits
+        return self.id2label[int(logits.argmax(-1).item())], {}
+
+    def cost_usd(self) -> float:
+        return 0.0
+
+    def close(self):
+        del self.model
+        gc.collect()
+        if self.torch.cuda.is_available():
+            self.torch.cuda.empty_cache()
+
+
 class NvidiaBackend:
     """NVIDIA NIM, OpenAI-compatible REST.
 
@@ -1033,6 +1144,10 @@ def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
         print(f"  pricing: ${rates['in']}/M in, ${rates['out']}/M out"
               + ("  (introductory - doubles 2027-01-01)"
                  if rates.get("doubles_2027") else ""))
+    elif spec.kind == "classifier":
+        preflight_vram(spec)
+        effective_model_id = spec.model_id
+        backend = ClassifierBackend(spec.model_id)
     elif spec.kind == "nvidia":
         effective_model_id = spec.model_id
         print(f"  nvidia NIM: {spec.model_id}")
@@ -1071,7 +1186,15 @@ def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
                 t0 = time.time()
                 text, meta = backend.generate(images, prompt)
                 latency = time.time() - t0
-                pred = extract_answer(text, item.options)
+                if isinstance(backend, ClassifierBackend):
+                    # A class name, not an option letter. `correct` is left
+                    # False here on purpose: only the collapsed scorer can
+                    # judge a 5-class prediction against 7-class gold, and
+                    # writing a guess into the row would make a wrong number
+                    # look authoritative.
+                    pred = None
+                else:
+                    pred = extract_answer(text, item.options)
                 rec = {
                     "index": item.index,
                     "model_id": effective_model_id,

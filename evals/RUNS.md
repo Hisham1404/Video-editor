@@ -42,6 +42,22 @@ Gemini on full ShotBench is the one that matters: the incumbent's headline
 87.1% rests on **31 items**, against 3572 for every local model. Until it lands,
 the production default is the least-measured option in the comparison.
 
+## Queued for the next L40S — `bash run_tomorrow.sh`
+
+| Model | Weights | Why |
+|---|---|---|
+| Qwen3-VL-2B | 4.3 GB | quarter the tested 8B; changes hosting economics if close |
+| Qwen3-VL-4B | 8.9 GB | the midpoint — does accuracy scale with parameters at all? |
+| Qwen3.6-35B-A3B **FP8** | 37.5 GB | MoE: ~3B active, 35B stored. bf16 is 71.9GB and will not fit |
+| dinov2-shotscale | 1.2 GB | not a VLM — a classifier. 5 classes, so `--collapse5` only |
+
+Runs film-grab sighted, film-grab blind, then ShotBench. Smallest first, so
+three results are banked before the 37.5GB model risks the card.
+
+**Too big for a 48GB card**, deliberately not registered: gemma-4-31B-it
+(62.5GB), gemma-4-26B-A4B-it (51.6GB), Qwen3.6-35B-A3B bf16 (71.9GB). They need
+an 80GB instance.
+
 ## Not started
 
 | What | Blocked on |
@@ -50,6 +66,20 @@ the production default is the least-measured option in the comparison.
 | groq qwen3.6-27b | needs thinking suppressed first; it emits `<think>` |
 | Blind controls for groq / nvidia arms | after their sighted runs |
 | AutoShot for stage 1 | separate problem — shot boundaries, not scale |
+
+## The HuggingFace survey result
+
+Searched `shotvl`, `cinematic`, `cinematography`, `shot-scale`, `shot type`,
+`film-grammar`, `camera-angle`, `storyboard`.
+
+**ShotVL-3B and ShotVL-7B are the only cinematography-tuned VLMs on the Hub.**
+Everything else returned is image *generation* (SDXL/Flux/LTX LoRAs for making
+cinematic-looking images). The specialist field is fully tested; what remains is
+finding a generalist that is cheaper or better.
+
+`ethz-mtc/shot_scale_classifier-resnet50` looked promising at 0.1GB but ships no
+config.json — a bare .bin with no id2label, so its outputs cannot be
+interpreted. Dropped.
 
 ---
 

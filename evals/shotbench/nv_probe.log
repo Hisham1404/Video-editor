@@ -1,0 +1,93 @@
+  1/82  01-ai/yi-large                                       HTTP 404             Function '23bd454d-b225-49a3-8118-582a62fc51b8
+  2/82  adept/fuyu-8b                                        HTTP 404             Function 'e598bfc1-b058-41af-869d-556d3c7e1b48
+  3/82  ai21labs/jamba-1.5-large-instruct                    HTTP 404             Function '6497fc2b-7ff8-4019-8946-123dccbfc863
+  4/82  aisingapore/sea-lion-7b-instruct                     HTTP 404             Function '02f84bf4-c1a1-489b-a9de-ac3e8dcdec14
+  5/82  bigcode/starcoder2-15b                               HTTP 404             404 page not found
+
+  6/82  databricks/dbrx-instruct                             HTTP 404             Function '3d6c2ff8-8bfc-4d10-8fd0-b7337288e869
+  7/82  deepseek-ai/deepseek-coder-6.7b-instruct             HTTP 404             Function 'e503b15c-62b0-4d69-b532-a88f0bfa2656
+  8/82  deepseek-ai/deepseek-v4-flash-0731                   IndexError           list index out of range
+  9/82  deepseek-ai/deepseek-v4-pro-0813                     TimeoutError         The read operation timed out
+ 10/82  google/codegemma-1.1-7b                              HTTP 404             Function 'e2d298c5-204e-4213-b921-9f492cc9011b
+ 11/82  google/codegemma-7b                                  HTTP 404             Function '7dfc10a8-3cc4-448e-97c1-2213308dc222
+ 12/82  google/deplot                                        HTTP 404             Function '784a8ca4-ea7d-4c93-bb46-ec027c3fae47
+ 13/82  google/diffusiongemma-26b-a4b-it                     VISION OK       282  
+ 14/82  google/gemma-2b                                      HTTP 404             Function '04174188-f742-4069-9e72-d77c2b77d3cb
+ 15/82  google/gemma-3-12b-it                                HTTP 404             Function 'ee47df99-c92b-4dc9-b3a7-f3fb0f087b73
+ 16/82  google/gemma-3-4b-it                                 HTTP 404             Function 'c322f327-55a3-4af3-a91f-c757e2b8b135
+ 17/82  google/gemma-4-31b-it                                TimeoutError         The read operation timed out
+ 18/82  google/recurrentgemma-2b                             HTTP 404             Function '2f495340-a99f-4b4b-89bd-1beb003dd896
+ 19/82  ibm/granite-3.0-3b-a800m-instruct                    HTTP 404             Function '67324577-3f91-4aa6-b750-97468262530d
+ 20/82  ibm/granite-3.0-8b-instruct                          HTTP 404             Function '5a24a4f0-2d59-46b3-ac65-42307f2633d1
+ 21/82  ibm/granite-34b-code-instruct                        HTTP 404             Function '4df48b4f-e3c5-4ade-82c7-c06b65e25d18
+ 22/82  ibm/granite-8b-code-instruct                         HTTP 404             Function 'af7b6f03-f615-4c5f-86c6-388bd35cede0
+ 23/82  meta/codellama-70b                                   HTTP 404             Function 'f6b06895-d073-4714-8bb2-26c09e9f6597
+ 24/82  meta/llama-3.2-11b-vision-instruct                   VISION OK      1623  Blue.
+ 25/82  meta/llama-3.2-90b-vision-instruct                   TimeoutError         The read operation timed out
+ 26/82  meta/llama-guard-4-12b                               TimeoutError         The read operation timed out
+ 27/82  meta/llama2-70b                                      HTTP 404             Function '2fddadfb-7e76-4c8a-9b82-f7d3fab94471
+ 28/82  meta/muse-glimmer-30b                                VISION OK        85  
+ 29/82  microsoft/kosmos-2                                   HTTP 404             Function '6018fed7-f227-48dc-99bc-3fd4264d5037
+ 30/82  microsoft/phi-3-vision-128k-instruct                 HTTP 404             Function '20f2537e-8593-4eb9-ad40-60eee3bbaa55
+ 31/82  microsoft/phi-3.5-moe-instruct                       HTTP 404             Function 'e6cab982-62f4-481e-9a7a-3dedb87dbd01
+ 32/82  mistralai/codestral-22b-instruct-v0.1                HTTP 404             Function '9a10b012-e6df-46fd-83b2-700dcbc75814
+ 33/82  mistralai/mistral-7b-instruct-v0.3                   HTTP 404             Function 'cd89bd68-13e3-47a9-861e-9a62e6e14b05
+ 34/82  mistralai/mistral-large                              HTTP 404             Function '767b5b9a-3f9d-4c1d-86e8-fa861988cee7
+ 35/82  mistralai/mistral-large-2-instruct                   HTTP 404             Function '7fadd4de-e22a-48e4-90e9-f02ef14a74b9
+ 36/82  mistralai/mistral-nemotron                           HTTP 400             /config/models/mystidia is not a multimodal mo
+ 37/82  mistralai/mixtral-8x22b-v0.1                         HTTP 404             Function '39655fc1-9ebc-4b24-963e-6915ea6680de
+ 38/82  moonshotai/kimi-k2.6                                 HTTP 404             Function '23d4f03a-b8a6-4adb-a183-7daa083a09cc
+ 39/82  moonshotai/kimi-k3                                   TimeoutError         The read operation timed out
+ 40/82  nv-mistralai/mistral-nemo-12b-instruct               HTTP 404             Function 'f8c05193-d2e2-4f0f-bb4d-7ad70070002b
+ 41/82  nvidia/ai-synthetic-video-detector                   HTTP 500             Internal error while making inference request
+ 42/82  nvidia/cosmos-reason2-8b                             HTTP 404             Function 'e199b43b-6c62-4a63-9379-f60e1a953236
+ 43/82  nvidia/embed-qa-4                                    HTTP 404             404 page not found
+
+ 44/82  nvidia/ising-calibration-1.5-31b                     VISION OK       282  Blue
+ 45/82  nvidia/llama-3.1-nemoguard-8b-content-safety         HTTP 400             {"error":"[{'type': 'string_type', 'loc': ('bo
+ 46/82  nvidia/llama-3.1-nemoguard-8b-topic-control          HTTP 400             {"error":"[{'type': 'string_type', 'loc': ('bo
+ 47/82  nvidia/llama-3.1-nemotron-51b-instruct               HTTP 404             Function '5beba52c-65a9-4f46-8cd9-656689a1b205
+ 48/82  nvidia/llama-3.1-nemotron-70b-instruct               HTTP 404             Function '9b96341b-9791-4db9-a00d-4e43aa192a39
+ 49/82  nvidia/llama-3.1-nemotron-safety-guard-8b-v3         HTTP 400             Your model does not support multi-modal inputs
+ 50/82  nvidia/llama-3.1-nemotron-ultra-253b-v1              HTTP 404             Function '84bf12ff-edbd-4435-baea-0fa6a7453d2e
+ 51/82  nvidia/llama-3.2-nemoretriever-1b-vlm-embed-v1       HTTP 404             404 page not found
+
+ 52/82  nvidia/llama-3.2-nv-embedqa-1b-v1                    HTTP 404             404 page not found
+
+ 53/82  nvidia/llama-nemotron-embed-vl-1b-v2                 HTTP 404             404 page not found
+
+ 54/82  nvidia/llama3-chatqa-1.5-70b                         HTTP 404             Function '46594287-38b9-481c-a37f-baa02f2d3ba1
+ 55/82  nvidia/mistral-nemo-minitron-8b-8k-instruct          HTTP 404             Function '5aa06dd2-0a02-4a5d-be4c-bf88e956965d
+ 56/82  nvidia/nemotron-3-embed-1b                           HTTP 404             404 page not found
+
+ 57/82  nvidia/nemotron-3-nano-omni-30b-a3b-reasoning        HTTP 503             {"error":{"message":"ResourceExhausted: Worker
+ 58/82  nvidia/nemotron-3-super-120b-a12b                    HTTP 400             {"error":{"message":"ValueError: Received mult
+ 59/82  nvidia/nemotron-3-ultra-550b-a55b                    HTTP 400             {"error":{"message":"ValueError: Received mult
+ 60/82  nvidia/nemotron-3.5-content-safety                   VISION OK       736  User Safety: safe
+ 61/82  nvidia/nemotron-3.5-lightning-30b-a3b                HTTP 400             {"error":{"message":"ValueError: Received mult
+ 62/82  nvidia/nemotron-4-340b-instruct                      HTTP 404             Function 'b0fcd392-e905-4ab4-8eb9-aeae95c30b37
+ 63/82  nvidia/nemotron-4-340b-reward                        HTTP 404             Function 'c53ee0e9-bad9-4e09-b365-52c9d6b71254
+ 64/82  nvidia/nemotron-nano-3-30b-a3b                       HTTP 404             Function '2b2dcd47-c858-425a-9c04-4cacf2eac993
+ 65/82  nvidia/nemotron-parse                                HTTP 400             Content cannot be a plain string. The model do
+ 66/82  nvidia/nemotron-parse-2.0                            VISION OK        12  **********************
+ 67/82  nvidia/neva-22b                                      HTTP 404             Function 'bc205f8e-1740-40df-8d32-c4321763498a
+ 68/82  nvidia/nv-embedqa-mistral-7b-v2                      HTTP 404             404 page not found
+
+ 69/82  nvidia/nvclip                                        HTTP 404             404 page not found
+
+ 70/82  nvidia/riva-translate-4b-instruct                    HTTP 404             Function 'f35337fa-b4dd-4996-bcba-5476ee01171d
+ 71/82  nvidia/riva-translate-4b-instruct-v1.1               HTTP 400             Your model does not support multi-modal inputs
+ 72/82  nvidia/riva-translate-4b-instruct-v2                 HTTP 400             {"error":{"message":"nvidia/riva-translate-4b-
+ 73/82  nvidia/vila                                          HTTP 404             Function '1c8df143-2303-419b-8b28-b4dd82cfe113
+ 74/82  openai/gpt-oss-20b                                   VISION OK        76  
+ 75/82  poolside/laguna-xs-2.1                               HTTP 503             {"error":{"message":"ResourceExhausted: All wo
+ 76/82  snowflake/arctic-embed-l                             HTTP 404             404 page not found
+
+ 77/82  writer/palmyra-creative-122b                         HTTP 404             Function '00bdd0a7-e38f-4423-9007-c4d8730a3f78
+ 78/82  writer/palmyra-fin-70b-32k                           HTTP 404             Function '316490c6-f1ed-41f9-9da8-3fa9e885653b
+ 79/82  writer/palmyra-med-70b                               HTTP 404             Function 'aab71274-5281-4941-b0b8-20f339d1fc7e
+ 80/82  writer/palmyra-med-70b-32k                           HTTP 404             Function 'd6faa974-3591-49a4-963d-97221d074b2e
+ 81/82  z-ai/glm-5.3-flash                                   VISION OK        50  
+ 82/82  zyphra/zamba2-7b-instruct                            HTTP 404             Function '8378ffb2-51b0-4140-9684-dda1889373e6
+
+written: nvidia_vision_probe.json
