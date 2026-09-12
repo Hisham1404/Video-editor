@@ -51,3 +51,5 @@ evals/shotbench/results/*.prefix-backup
 # worth versioning, not the JPEGs.
 evals/reels/frames/*.jpg
 evals/reels/labeller.html
+evals/reels/frames_shots/
+evals/reels/sheets/
