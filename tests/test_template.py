@@ -221,3 +221,62 @@ def test_confidence_out_of_range_rejected():
     pos = positions_from_beats([0, 4])
     with pytest.raises(TemplateError, match="confidence"):
         Slot(index=0, start=pos[0], end=pos[1], match_confidence=1.4)
+
+
+# --- stage 5/6 shot-size confidence -------------------------------------
+
+def test_agreement_between_taggers_raises_confidence():
+    """Two independently-trained models agreeing is an external check that a
+    single model's softmax cannot provide. Measured on 859 frames: 88.3% when
+    they agree, 63.9% when they do not."""
+    from pipeline.stages.s5_ingest import (
+        AGREE_CONFIDENCE, DISAGREE_CONFIDENCE, SOLO_CONFIDENCE,
+        confidence_from_votes,
+    )
+    assert confidence_from_votes({"dinov2": "close up", "vlm": "close up"}) == AGREE_CONFIDENCE
+    assert confidence_from_votes({"dinov2": "close up", "vlm": "medium"}) == DISAGREE_CONFIDENCE
+    assert confidence_from_votes({"dinov2": "close up"}) == SOLO_CONFIDENCE
+    assert confidence_from_votes({}) is None
+    assert AGREE_CONFIDENCE > SOLO_CONFIDENCE > DISAGREE_CONFIDENCE
+
+
+def test_a_disputed_asset_loses_to_an_agreed_one():
+    """The whole point of carrying confidence into the score.
+
+    Equal semantic similarity, equal shot size, one asset whose framing two
+    models disagreed about. Without the discount the tie breaks arbitrarily,
+    and arbitrary is what puts a visibly wrong-sized shot in the reel."""
+    from pathlib import Path
+    from pipeline.stages.s5_ingest import Asset, confidence_from_votes
+    from pipeline.stages.s6_match import score
+
+    slot = make_template().slots[0]
+    slot.shot_size = "close up"
+
+    agreed = Asset(path=Path("a.mp4"), kind="clip", shot_size="close up",
+                   shot_size_votes={"dinov2": "close up", "vlm": "close up"})
+    agreed.shot_size_confidence = confidence_from_votes(agreed.shot_size_votes)
+
+    disputed = Asset(path=Path("b.mp4"), kind="clip", shot_size="close up",
+                     shot_size_votes={"dinov2": "close up", "vlm": "medium"})
+    disputed.shot_size_confidence = confidence_from_votes(disputed.shot_size_votes)
+
+    assert score(slot, agreed, similarity=0.8) > score(slot, disputed, similarity=0.8)
+    assert disputed.shot_size_is_uncertain
+    assert not agreed.shot_size_is_uncertain
+
+
+def test_untagged_asset_is_treated_as_doubtful_not_certain():
+    """None means nobody looked. That is a reason to discount the size term,
+    not to trust it -- the opposite default would silently reward assets that
+    skipped tagging entirely."""
+    from pathlib import Path
+    from pipeline.stages.s5_ingest import Asset
+    from pipeline.stages.s6_match import score
+
+    slot = make_template().slots[0]
+    slot.shot_size = "close up"
+    untagged = Asset(path=Path("c.mp4"), kind="clip", shot_size="close up")
+    tagged = Asset(path=Path("d.mp4"), kind="clip", shot_size="close up",
+                   shot_size_confidence=0.88)
+    assert score(slot, untagged, 0.8) < score(slot, tagged, 0.8)
