@@ -89,25 +89,79 @@ def extract(args: argparse.Namespace) -> None:
     if not videos:
         sys.exit(f"no videos in {src} (looked for {sorted(VIDEO_EXT)})")
 
-    total = 0
+    # Record each frame's source orientation. The whole reason this set exists
+    # is that every public benchmark is landscape cinema while the app ingests
+    # vertical phone video -- so if the reels supplied are a mix, that has to be
+    # recoverable at scoring time or the set silently fails to answer its own
+    # question. A manifest rather than a filename suffix, so relabelling or
+    # re-extracting cannot quietly change what a frame claims to be.
+    manifest = out / "manifest.tsv"
+    seen = set()
+    if manifest.exists():
+        for line in manifest.read_text(encoding="utf-8").splitlines()[1:]:
+            if line.strip():
+                seen.add(line.split("\t")[0])
+    rows, total = [], 0
+    counts = {"vertical": 0, "landscape": 0, "square": 0}
+
     for vid in videos:
         dur = _duration(vid)
         if dur is None:
             print(f"  skip {vid.name}: could not read duration")
             continue
+        wh = _dimensions(vid)
+        if wh is None:
+            orient, w, h = "unknown", 0, 0
+        else:
+            w, h = wh
+            orient = ("vertical" if h > w else
+                      "landscape" if w > h else "square")
         # Inset from both ends: the first and last frames are often black or a
         # title card, which are not shots and would pollute the set.
         for i in range(args.per_video):
             t = dur * (i + 0.5) / args.per_video
             dst = out / f"{vid.stem}_{i:02d}.jpg"
-            if dst.exists():
-                continue
-            cmd = ["ffmpeg", "-nostdin", "-loglevel", "error", "-ss", f"{t:.3f}",
-                   "-i", str(vid), "-frames:v", "1", "-q:v", "3", str(dst)]
-            if subprocess.run(cmd).returncode == 0:
+            if not dst.exists():
+                cmd = ["ffmpeg", "-nostdin", "-loglevel", "error",
+                       "-ss", f"{t:.3f}", "-i", str(vid), "-frames:v", "1",
+                       "-q:v", "3", str(dst)]
+                if subprocess.run(cmd).returncode != 0:
+                    continue
                 total += 1
+            if dst.name not in seen:
+                rows.append(f"{dst.name}\t{vid.name}\t{orient}\t{w}\t{h}")
+                seen.add(dst.name)
+                counts[orient] = counts.get(orient, 0) + 1
+
+    if rows:
+        new = not manifest.exists()
+        with manifest.open("a", encoding="utf-8") as fh:
+            if new:
+                fh.write("frame\tsource\torientation\twidth\theight\n")
+            fh.write("\n".join(rows) + "\n")
+
     print(f"extracted {total} frames from {len(videos)} videos into {out}/")
+    print(f"  orientation: " + "  ".join(f"{k} {v}" for k, v in counts.items() if v))
+    if counts.get("landscape", 0) > counts.get("vertical", 0):
+        print("  NOTE: more landscape than vertical frames. This set exists to")
+        print("  test vertical phone video against landscape-cinema benchmarks;")
+        print("  a mostly-landscape set measures something closer to what the")
+        print("  existing benchmarks already cover. Scores can still be split by")
+        print("  orientation via manifest.tsv, but add vertical reels if you can.")
     print(f"next:  python label.py label --frames {out}")
+
+
+def _dimensions(path: Path) -> tuple[int, int] | None:
+    try:
+        r = subprocess.run(
+            ["ffprobe", "-v", "error", "-select_streams", "v:0",
+             "-show_entries", "stream=width,height",
+             "-of", "csv=p=0:s=x", str(path)],
+            capture_output=True, text=True, check=True)
+        w, h = r.stdout.strip().split("\n")[0].split("x")
+        return int(w), int(h)
+    except Exception:
+        return None
 
 
 def _duration(path: Path) -> float | None:
@@ -213,3 +267,36 @@ def export(args: argparse.Namespace) -> None:
     if thin:
         print(f"\n  WARNING: under 10 examples of {thin}. Per-class accuracy on "
               "those is not measurable; treat only the overall number as real.")
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        prog="label.py",
+        description="Build a shot-scale test set from your own reels.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    e = sub.add_parser("extract", help="pull evenly spaced frames from videos")
+    e.add_argument("--videos", required=True, help="directory of source reels")
+    e.add_argument("--out", default="frames", help="where to write frames")
+    e.add_argument("--per-video", type=int, default=6,
+                   help="frames per video; 150-200 total is the target")
+    e.set_defaults(fn=extract)
+
+    l = sub.add_parser("label", help="label the extracted frames")
+    l.add_argument("--frames", default="frames", help="directory of frames")
+    l.set_defaults(fn=label)
+
+    x = sub.add_parser("export", help="write the harness TSV")
+    x.add_argument("--frames", default="frames", help="directory of frames")
+    x.add_argument("--out", default="reels_test.tsv", help="TSV to write")
+    x.set_defaults(fn=export)
+
+    args = ap.parse_args()
+    args.fn(args)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

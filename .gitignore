@@ -45,3 +45,9 @@ graphify-out/
 
 # Pre-parser-fix result snapshots, kept locally as evidence, not worth versioning
 evals/shotbench/results/*.prefix-backup
+
+# Extracted reel frames: regenerable from the source videos with
+# `python evals/reels/make_page.py`, and large. The labels are the artefact
+# worth versioning, not the JPEGs.
+evals/reels/frames/*.jpg
+evals/reels/labeller.html
