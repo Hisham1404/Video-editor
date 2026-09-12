@@ -1,0 +1,155 @@
+Preparing film-grab shot-scale set (independent of ShotBench) ...
+  859 items, 7 options each (chance 14.3%)
+
+=== gemini-lite ===
+  Cheaper, emits no thinking tokens, and is NOT on introductory pricing so it does not double on 2027-01-01.
+  resuming: 498 done, 361 remaining
+  api model: gemini-3.5-flash-lite
+  pricing: $0.3/M in, $2.5/M out
+  25/361  0.33 it/s  eta 17.1m
+  50/361  0.28 it/s  eta 18.7m
+  75/361  0.30 it/s  eta 15.9m
+  100/361  0.28 it/s  eta 15.8m
+  125/361  0.29 it/s  eta 13.8m
+  150/361  0.26 it/s  eta 13.5m
+  175/361  0.27 it/s  eta 11.6m
+  200/361  0.27 it/s  eta 9.9m
+  225/361  0.27 it/s  eta 8.5m
+  250/361  0.27 it/s  eta 6.8m
+  275/361  0.27 it/s  eta 5.4m
+  300/361  0.27 it/s  eta 3.8m
+  325/361  0.27 it/s  eta 2.2m
+  350/361  0.27 it/s  eta 0.7m
+  361/361  0.26 it/s  eta 0.0m
+  tokens in=416306 out=361 (thinking=0, 0% of output) cost=$0.1258
+
+====================================================================================================
+ACCURACY BY DIMENSION (%)
+====================================================================================================
+model                                     camera angle  camera moveme    composition      lens size       lighting  lighting type   shot framing  shot scale (f      shot size    overall       n
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+dinov2-shotscale.filmshots                                                                                                                                 0.0                       0.0     859
+gemini                                                                                                                                                                  100.0      100.0       3
+gemini-lite                                      50.0                          64.3           77.8           50.0           58.3          100.0                          78.9       69.8      86
+gemini-lite.filmshots                                                                                                                                     60.3                      60.3     859
+gemini-lite.filmshots.noimage                                                                                                                                                        0.0       0
+gemma-4-26b-a4b.filmshots                                                                                                                                 62.5                      62.5     859
+gemma-4-26b-a4b.filmshots.noimage                                                                                                                          0.0                       0.0     859
+gemma-4-31b.filmshots                                                                                                                                     68.3                      68.3     859
+gemma-4-31b.filmshots.noimage                                                                                                                              0.0                       0.0     836
+groq-qwen3.8-27b.filmshots                                                                                                                                52.9                      52.9      70
+nv-llama32-11b-vision.filmshots                                                                                                                           36.4                      36.4     859
+nv-nemotron-omni.filmshots                                                                                                                                53.6                      53.6     852
+qwen3-vl-2b                                      45.5           42.7           43.0           37.4           46.3           52.3           59.8                          60.0       48.3    3572
+qwen3-vl-2b.filmshots                                                                                                                                     44.8                      44.8     859
+qwen3-vl-2b.filmshots.noimage                                                                                                                             10.4                      10.4     859
+qwen3-vl-4b                                      50.1           45.3           48.6           39.3           46.0           59.0           72.8                          59.4       52.5    3572
+qwen3-vl-4b.filmshots                                                                                                                                     46.9                      46.9     859
+qwen3-vl-4b.filmshots.noimage                                                                                                                             17.6                      17.6     859
+qwen3-vl-8b                                      50.1           49.4           50.5           43.4           48.6           58.5           75.7                          61.4       54.7    3572
+qwen3-vl-8b.filmshots                                                                                                                                     49.7                      49.7     859
+qwen3-vl-8b.filmshots.noimage                                                                                                                             10.5                      10.5     859
+qwen3-vl-8b.noimage                              23.5           37.5           27.3           24.3           26.3           28.4           23.8                          24.3       26.9    3572
+qwen3.5-9b                                       51.9           28.0           56.8           47.9           44.0           66.2           81.3                          56.7       54.1    3572
+qwen3.5-9b.filmshots                                                                                                                                      54.2                      54.2     859
+qwen3.5-9b.filmshots.noimage                                                                                                                               8.4                       8.4     859
+qwen3.5-9b.noimage                               25.7           36.2           28.6           23.7           26.3           25.2           24.3                          24.7       26.9    3572
+qwen3.6-35b-a3b-fp8.filmshots                                                                                                                             57.6                      57.6     859
+qwen3.6-35b-a3b-fp8.filmshots.noimage                                                                                                                      8.1                       8.1     859
+shotvl-3b                                        68.1           56.2           58.7           60.5           53.4           67.4           86.3                          81.2       66.8    3572
+shotvl-3b.filmshots                                                                                                                                       53.6                      53.6     859
+shotvl-3b.filmshots.noimage                                                                                                                               12.6                      12.6     859
+shotvl-3b.noimage                                26.6           44.0           25.1           23.9           30.9           32.3           25.2                          22.3       28.6    3572
+shotvl-7b                                        72.1           57.3           61.8           60.9           57.4           65.9           84.5                          72.2       66.7    3572
+shotvl-7b.filmshots                                                                                                                                       54.8                      54.8     859
+shotvl-7b.filmshots.noimage                                                                                                                               10.0                      10.0     859
+shotvl-7b.noimage                                24.8           50.4           25.1           24.7           30.3           29.9           24.9                          25.4       29.4    3572
+
+====================================================================================================
+DECISION METRIC - shot size + shot framing only
+(the two fields the template depends on; overall average is not the right metric here)
+====================================================================================================
+  gemini                                   100.0%   (n=3)
+  gemini-lite                               87.1%   (n=31)
+  shotvl-3b                                 83.7%   (n=930)
+  shotvl-7b                                 78.1%   (n=930)
+  qwen3.5-9b                                68.5%   (n=930)
+  qwen3-vl-8b                               68.3%   (n=930)
+  qwen3-vl-4b                               65.8%   (n=930)
+  qwen3-vl-2b                               59.9%   (n=930)
+  shotvl-7b.noimage                         25.2%   (n=930)
+  qwen3.5-9b.noimage                        24.5%   (n=930)
+  qwen3-vl-8b.noimage                       24.1%   (n=930)
+  shotvl-3b.noimage                         23.7%   (n=930)
+
+====================================================================================================
+CONTAMINATION CONTROL - what the model scores without the image
+====================================================================================================
+  model                                      blind   chance   sighted    sight   verdict
+  gemini-lite.filmshots                       0.0%    25.0%     60.3%   +60.3   clean - below chance blind
+  gemma-4-26b-a4b.filmshots                   0.0%    14.3%     62.5%   +62.5   clean - below chance blind
+  gemma-4-31b.filmshots                       0.0%    14.3%     68.3%   +68.3   clean - below chance blind
+  qwen3-vl-2b.filmshots                      10.4%    14.3%     44.8%   +34.5   clean - below chance blind
+  qwen3-vl-4b.filmshots                      17.6%    14.3%     46.9%   +29.3   clean - at chance without the image
+  qwen3-vl-8b                                26.9%    25.0%     54.7%   +27.7   clean - at chance without the image
+  qwen3-vl-8b.filmshots                      10.5%    14.3%     49.7%   +39.2   clean - below chance blind
+  qwen3.5-9b                                 26.9%    25.0%     54.1%   +27.2   clean - at chance without the image
+  qwen3.5-9b.filmshots                        8.4%    14.3%     54.2%   +45.9   clean - below chance blind
+  qwen3.6-35b-a3b-fp8.filmshots               8.1%    14.3%     57.6%   +49.5   clean - below chance blind
+  shotvl-3b                                  28.6%    25.0%     66.8%   +38.2   clean - at chance without the image
+  shotvl-3b.filmshots                        12.6%    14.3%     53.6%   +41.0   clean - at chance without the image
+  shotvl-7b                                  29.4%    25.0%     66.7%   +37.3   clean - at chance without the image
+  shotvl-7b.filmshots                        10.0%    14.3%     54.8%   +44.8   clean - below chance blind
+
+  Rank models by 'sight', not by 'sighted' -- sight is each model
+  measured against itself, so an advantage from recognising the
+  question format cancels out. Chance is per-dataset: ShotBench is
+  4-option, the film-grab set 7.
+
+====================================================================================================
+OPERATIONS
+====================================================================================================
+model                                    med latency  unparsed  errors    tok in   tok out  think%    $/item  $/50 imgs
+dinov2-shotscale.filmshots                     0.05s       859       0         0         0      -     local      local
+gemini                                        14.62s         0       0      3347      1149    100%$  0.00227$     0.114
+gemini-lite                                    1.79s         0       0     96591       314      0%$  0.00035$     0.017
+gemini-lite.filmshots                          1.85s         0       0    989996       859      0%$  0.00035$     0.017
+gemini-lite.filmshots.noimage                  0.00s         0       0         0         0      -     local      local
+gemma-4-26b-a4b.filmshots                      0.30s         0       0         0         0      -     local      local
+gemma-4-26b-a4b.filmshots.noimage              1.57s       859       0         0         0      -     local      local
+gemma-4-31b.filmshots                          0.33s         0       0         0         0      -     local      local
+gemma-4-31b.filmshots.noimage                  1.65s       836       0         0         0      -     local      local
+groq-qwen3.8-27b.filmshots                     8.75s         0       0     64480       140      0%$  0.00070$     0.035
+nv-llama32-11b-vision.filmshots                3.63s         0       0   4077781     12391      0%$  0.00361$     0.181
+nv-nemotron-omni.filmshots                     7.47s         0       0    631992    466885      0%$  0.00261$     0.131
+qwen3-vl-2b                                    0.21s         0       0         0         0      -     local      local
+qwen3-vl-2b.filmshots                          0.13s         0       0         0         0      -     local      local
+qwen3-vl-2b.filmshots.noimage                  0.11s         0       0         0         0      -     local      local
+qwen3-vl-4b                                    0.32s         0       0         0         0      -     local      local
+qwen3-vl-4b.filmshots                          0.16s         0       0         0         0      -     local      local
+qwen3-vl-4b.filmshots.noimage                  0.05s         0       0         0         0      -     local      local
+qwen3-vl-8b                                    0.41s         0       0         0         0      -     local      local
+qwen3-vl-8b.filmshots                          0.23s         0       0         0         0      -     local      local
+qwen3-vl-8b.filmshots.noimage                  0.06s         0       0         0         0      -     local      local
+qwen3-vl-8b.noimage                            0.07s         0       0         0         0      -     local      local
+qwen3.5-9b                                     0.53s       173       0         0         0      -     local      local
+qwen3.5-9b.filmshots                           0.32s        10       0         0         0      -     local      local
+qwen3.5-9b.filmshots.noimage                   0.15s         0       0         0         0      -     local      local
+qwen3.5-9b.noimage                             0.15s         0       0         0         0      -     local      local
+qwen3.6-35b-a3b-fp8.filmshots                  0.61s         0       0         0         0      -     local      local
+qwen3.6-35b-a3b-fp8.filmshots.noimage          0.25s         4       0         0         0      -     local      local
+shotvl-3b                                      0.38s         0       0         0         0      -     local      local
+shotvl-3b.filmshots                            0.14s         0       0         0         0      -     local      local
+shotvl-3b.filmshots.noimage                    0.04s         0       0         0         0      -     local      local
+shotvl-3b.noimage                              0.04s         0       0         0         0      -     local      local
+shotvl-7b                                      0.48s       109       0         0         0      -     local      local
+shotvl-7b.filmshots                            0.19s        85       0         0         0      -     local      local
+shotvl-7b.filmshots.noimage                    0.06s         0       0         0         0      -     local      local
+shotvl-7b.noimage                              0.06s         0       0         0         0      -     local      local
+
+'$/50 imgs' projects one reference-reel analysis (SPEC assumes 40-60
+images per reference). Thinking tokens bill as output and are included.
+
+Reference - published ShotBench: ShotVL-7B 70.1 | ShotVL-3B 65.1 | GPT-4o 59.3 | Gemini-2.5-flash 54.5
+If shotvl-7b lands near 70.1 overall, the harness is calibrated.
+

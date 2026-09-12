@@ -15,17 +15,23 @@ saying so in a comment is cheaper than pretending otherwise.
 
 What IS measured is how much to trust an asset's shot size, which is one of the
 two inputs to a match score. Stage 5 tags every asset twice -- a DINOv2
-classifier and the vision model -- and records whether they agreed. On 859
+classifier and stage 3's vision model -- and records whether they agreed. On 859
 human-labelled frames:
 
-    agreed (58% of assets)     88.3% correct
-    disagreed (42%)            63.9% correct
+    agreed (70.4% of assets)   91.6% correct
+    disagreed (29.6%)          45.7% correct
 
-That 24-point spread is free, because the classifier costs nothing to run. It
-does not make matching more accurate; it makes the score honest about which
-matches to doubt. An asset whose framing two models could not agree on should
-not win a slot on a hair's-breadth semantic margin over one they both read the
-same way.
+That 46-point spread is free: the classifier costs nothing to run and the second
+opinion falls out of a stage 3 call the pipeline already pays for. It does not
+make matching more accurate; it makes the score honest about which matches to
+doubt.
+
+The disagreement number is the one to design around. At 45.7% the pipeline is
+worse than guessing between the two labels on offer, and the second model is no
+better at 44.9% -- so on those assets nothing in the system knows the framing.
+An asset like that should not win a slot on a hair's-breadth semantic margin
+over one both taggers read the same way, and stage 7 should prefer emitting a
+generation prompt over filling a slot from it.
 """
 
 from __future__ import annotations

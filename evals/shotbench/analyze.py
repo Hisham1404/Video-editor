@@ -207,7 +207,10 @@ def main() -> None:
              ("dinov2-shotscale", "qwen3.5-9b"),
              ("gemma-4-31b", "gemma-4-26b-a4b"),
              ("dinov2-shotscale", "qwen3.6-35b-a3b-fp8"),
-             ("qwen3.5-9b", "qwen3.6-35b-a3b-fp8")]
+             ("qwen3.5-9b", "qwen3.6-35b-a3b-fp8"),
+             ("gemini-lite", "dinov2-shotscale"),
+             ("gemma-4-31b", "gemini-lite"),
+             ("gemini-lite", "qwen3.5-9b")]
     for na, nb in pairs:
         if na not in available or nb not in available:
             print(f"  skipped {na} vs {nb} (missing result)")
@@ -228,7 +231,10 @@ def main() -> None:
     cls = load("dinov2-shotscale")
     print(f"  {'second tagger':<20} {'agree':>7} {'acc|agree':>10} "
           f"{'acc|disagree':>13} {'spread':>7} {'2nd right on disagree':>22}")
-    for m in ["gemma-4-31b", "gemma-4-26b-a4b", "qwen3.5-9b",
+    # gemini-lite matters most here: if stage 3 calls it anyway, its shot-size
+    # answer is already paid for, so its agreement with the classifier is a free
+    # confidence signal rather than a second model to host.
+    for m in ["gemma-4-31b", "gemma-4-26b-a4b", "gemini-lite", "qwen3.5-9b",
               "qwen3.6-35b-a3b-fp8", "qwen3-vl-8b", "qwen3-vl-4b",
               "qwen3-vl-2b"]:
         if m not in available:

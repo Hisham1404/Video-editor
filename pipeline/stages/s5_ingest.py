@@ -23,20 +23,35 @@ The classifier is both the most accurate and effectively free, so it is the
 primary tagger.
 
 The second model is NOT here to raise accuracy. That was measured too, and it
-does not:
+does not: on the items where the two disagree, the second model is the less
+accurate one, so the only implementable rule is "believe the classifier", which
+lands back at its solo accuracy. No combination beats the classifier alone; the
+ceiling that does assumes a referee that already knows the answer.
 
-    they agree (58% of items)  -> 88.3% correct
-    they disagree (42%)        -> classifier 63.9%, VLM 25.6%
+What the second opinion buys is a **confidence signal**, and a strong one. The
+cross-check is gemini-3.5-flash-lite, because CLAUDE.md already makes it the
+stage 3 vision model -- its shot-size answer is a by-product of a call the
+pipeline pays for anyway, so this costs nothing extra. Measured on the same 859
+frames:
 
-On disagreement the VLM is worse, so the only sensible rule is "believe the
-classifier", which lands back at 78.0%. No implementable combination beats the
-classifier alone; the 88.8% ceiling assumes a referee that knows the answer.
+    they agree (70.4% of items)  -> 91.6% correct
+    they disagree (29.6%)        -> classifier 45.7%, gemini 44.9%
 
-What the second opinion buys is a **confidence signal**, and a strong one: a
-24-point spread between agreement and disagreement, for free. That matters
-because `s6_match.CONFIDENCE_FLOOR` is currently a guessed constant, and this
-gives stage 6 something measured to weight against. A wrong match the system
-flags is recoverable; a wrong match it is confident about ships a broken reel.
+Two things to notice. The agreement bucket is the most accurate of any pairing
+tested -- better than a 62.5GB model as the second opinion. And the disagreement
+bucket is near coin-flip for BOTH models, which is the useful part: when these
+two differ, nothing in the pipeline knows the answer, and stage 6 should treat
+that asset as a question rather than a fact.
+
+That 46-point spread is nearly double what a small local VLM gives (24 points,
+Qwen3-VL-2B). It matters because `s6_match.CONFIDENCE_FLOOR` is a guessed
+constant, and this gives stage 6 something measured to weight against. A wrong
+match the system flags is recoverable; a wrong match it is confident about ships
+a broken reel.
+
+If stage 3 moves to a different model, RE-MEASURE: `python
+evals/shotbench/analyze.py` prints this table, and the constants below are one
+row of it.
 """
 
 from __future__ import annotations
@@ -44,11 +59,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-#: Measured agreement rates, film-grab set, n=859. Used to turn "the two taggers
-#: agreed" into a number stage 6 can multiply into a match score. These are
-#: observed accuracies, not tuning knobs -- re-measure before changing them.
-AGREE_CONFIDENCE = 0.88
-DISAGREE_CONFIDENCE = 0.64
+#: Measured agreement rates for dinov2-shotscale x gemini-3.5-flash-lite,
+#: film-grab set, n=859. Used to turn "the two taggers agreed" into a number
+#: stage 6 can multiply into a match score. These are observed accuracies, not
+#: tuning knobs -- re-measure before changing them, and re-measure if stage 3
+#: changes model, because the second tagger IS stage 3's model.
+AGREE_CONFIDENCE = 0.92
+DISAGREE_CONFIDENCE = 0.46
 
 #: Sole tagger, or no cross-check available (a still with no second opinion, or
 #: the VLM erroring). Its standalone accuracy.

@@ -107,17 +107,17 @@ Scored identically, collapsed to 5 classes (chance 20%), same 859 items:
 | gemma-4-31B | 62.5 GB | **81.0%** |
 | **aslakey/shot_scale** | **1.2 GB** | **78.0%** |
 | gemma-4-26B-A4B | 51.6 GB | 78.0% |
+| **gemini-3.5-flash-lite** | **API** | **77.8%** |
 | Qwen3.5-9B | 19.3 GB | 72.8% |
 | Qwen3.6-35B-A3B-FP8 | 37.5 GB (MoE) | 72.3% |
-| gemini-3.5-flash-lite | API | 71.1% *(498 delivered, then quota-walled)* |
+| nemotron-omni | API | 71.3% *(857 items)* |
 | Qwen3-VL-8B | 17.5 GB | 69.8% |
-| nemotron-omni | API | 66.7% *(612 items, running)* |
 | ShotVL-3B | 7.5 GB | 66.7% |
 | ShotVL-7B | 16.6 GB | 65.7% |
 | Qwen3-VL-4B | 8.9 GB | 64.4% |
 | Qwen3-VL-2B | 4.3 GB | 61.8% |
 | llama-3.2-11b-vision | API | 51.7% |
-| qwen3.8-27b (Groq) | API | 51.4% *(72 delivered, then quota-walled)* |
+| qwen3.8-27b (Groq) | API | 52.9% *(70 delivered, then quota-walled)* |
 
 Scored over items the provider **delivered**. An HTTP 429 is a fact about a
 billing quota, not about a model's eyesight, so it is out of the denominator —
@@ -150,6 +150,11 @@ full-set number understates it badly. Like for like on the same 498:
 **gemini-3.5-flash-lite is 4th of 13 and level with the classifier.** It is a
 real contender, not an also-ran. The same correction applies to every partial
 run in the table above — read them as harder-than-average slices.
+
+*The full run later confirmed this exactly.* Gemini scored **71.1%** on items
+0–497 and **87.0%** on the all-`medium` tail — a 15.9-point gap, against the
+14.5 predicted from the classifier's behaviour on the same split. The prefix
+was the hard half, and its full-set score is **77.8%**.
 
 ### The ranking is not class bias
 
@@ -207,6 +212,9 @@ wrong, so the Qwen3.5-9B row is n=849 and the rest n=859. Reproduce with
 | classifier vs Qwen3.6-35B-A3B | 134 | 85 | 10.52 | **0.0012** | classifier wins |
 | gemma-4-31B vs gemma-4-26B-A4B | 77 | 51 | 4.88 | **0.027** | dense beats MoE |
 | Qwen3.5-9B vs Qwen3.6-35B-A3B | 66 | 57 | 0.52 | 0.47 | 19 GB ties 37.5 GB |
+| **gemini-lite vs classifier** | 114 | 116 | 0.00 | **0.95** | **dead heat** |
+| gemma-4-31B vs gemini-lite | 99 | 71 | 4.29 | **0.038** | gemma ahead |
+| gemini-lite vs Qwen3.5-9B | 117 | 82 | 5.81 | **0.016** | gemini ahead |
 
 So: a 1.2 GB classifier is **not beaten** by a 62.5 GB model at 52× its size,
 and it **does beat** every model that fits on consumer hardware. It runs 19.8
@@ -233,6 +241,7 @@ Classifier as primary tagger, each candidate as the cross-check, on the same
 |---|---|---|---|---|---|
 | gemma-4-31B | 77.5% | 89.5% | 38.3% | **51.1** | 51.8% |
 | gemma-4-26B-A4B | 76.6% | 88.0% | 45.3% | 42.7 | 45.3% |
+| **gemini-3.5-flash-lite** | 70.4% | **91.6%** | 45.7% | **45.9** | 44.9% |
 | Qwen3.5-9B | 73.5% | 87.7% | 52.0% | 35.7 | 34.7% |
 | Qwen3.6-35B-A3B | 71.1% | 87.7% | 54.0% | 33.7 | 34.3% |
 | Qwen3-VL-8B | 68.6% | 87.3% | 57.8% | 29.5 | 31.9% |
@@ -252,12 +261,22 @@ below Qwen3.5-9B the second model is *worse* than the classifier on the very
 items they dispute, so it can only flag doubt; at gemma-4-31B it is finally
 better, which is why that row's disagree bucket collapses to 38.3%.
 
-What ships is constrained by cost, not by this table. gemma-4-31B needs an
-80 GB card; the pipeline's rule is local and free. So stage 5 uses the
-classifier plus whatever VLM stage 3 already loaded — currently a small Qwen,
-spread ~24 points — and the constants in `s5_ingest.py` are set from that row.
-**If stage 3 lands on a hosted model, its second opinion is already paid for and
-the spread widens for free.** Re-measure before changing the constants.
+**gemini-3.5-flash-lite is the row that ships.** Not because it is the widest
+spread — gemma-4-31B is — but because CLAUDE.md already makes it the stage 3
+vision model, so its shot-size answer is a by-product of a call the pipeline
+pays for anyway. Zero extra cost, and it has the **highest agreement accuracy
+of any pairing measured, 91.6%** — beating a 62.5 GB model as the second
+opinion.
+
+Its disagreement bucket is the useful half: **45.7% for the classifier and
+44.9% for gemini**. When these two differ, *neither* is better than a coin
+flip between the two labels on offer — nothing in the pipeline knows the
+framing of that asset, and stage 6 should treat it as a question rather than a
+fact. `s5_ingest.py` now carries 0.92 / 0.46 from this row, a 46-point spread
+against the 24 a small local Qwen gives.
+
+**If stage 3 changes model, re-measure.** The second tagger *is* stage 3's
+model; `analyze.py` prints this table and the constants are one row of it.
 
 ## 7. Bugs that produced fake results
 
@@ -323,11 +342,20 @@ accurate option measured for that one field regardless of budget.
 **Stage 6** discounts the shot-size term of a match score by that confidence, so
 an asset two models disagreed about loses a tie to one they read the same way.
 
-**Stage 3** is still open. Gemini flash-lite (71.1%), Qwen3.5-9B (72.8%) and
-nemotron-omni (66.7%, 284 tokens/image — 4× cheaper than Gemini) are within a
-few points of each other. flash-lite is a genuine contender on accuracy; its
-problem is that the free tier cannot complete a run, so any real comparison
-needs billing switched on first.
+**Stage 3 is settled, and it is the incumbent.** gemini-3.5-flash-lite scores
+**77.8%** on the full independent set — statistically tied with the classifier
+(p=0.95), significantly ahead of the best local model that fits a consumer card
+(p=0.016 vs Qwen3.5-9B), and behind only a 62.5 GB model that cannot be hosted
+under the local-and-free rule. It also emits **1,152 input and 1 output token**
+per image, so thinking tokens are not a factor at this prompt length.
+
+That choice pays twice. It settles stage 3, and because stage 5's cross-check
+*is* stage 3's model, it hands stage 5 the best confidence signal measured —
+91.6% on agreement — for no additional call.
+
+The one operational caveat: the free tier is 500 requests/day per model, so
+**billing must be enabled** before this is a real dependency. A run of 859
+items cost roughly $0.30 at published rates.
 
 **gemma-4-31B is the accuracy ceiling found, and is not deployable** under the
 local-and-free rule at 62.5 GB. It is worth knowing as the ceiling: nothing
