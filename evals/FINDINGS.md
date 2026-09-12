@@ -375,6 +375,53 @@ labelled by hand, run through the same harness.
 **Until that exists, the model choice rests entirely on data that does not look
 like the input.** Nothing in sections 3–6 survives that objection.
 
+### The attempt, and why it did not close the gap
+
+267 vertical frames were built from Pexels — one poster frame per video, so
+every item is independent, class-balanced by construction, and genuinely
+vertical. The set is good. **The labels are not**, and that was foreseeable:
+they were written by a vision-language model, with seven human corrections.
+
+The result, on the 139 frames both models answered before a quota cut Gemini
+short:
+
+| | classifier | gemini-lite | gap |
+|---|---|---|---|
+| film-grab — **human** labels | 78.0% | 77.8% | **+0.2** |
+| reels — **model** labels | 49.6% | 60.4% | **−10.8** |
+
+The gap moved **11.0 points toward Gemini**. That is precisely the direction
+author bias predicts — Gemini and the label author are the same kind of model,
+so where the author misreads a frame Gemini misreads it the same way and scores
+as correct — and it is nearly four times the 3-point threshold set in advance
+as the point at which the result should be discarded. McNemar says the gap is
+significant (p=0.018); significance is not the problem. Provenance is.
+
+**Two explanations fit this data and it cannot separate them:**
+
+1. The labels flatter Gemini, and the 10.8-point lead is largely an artefact.
+2. The classifier is genuinely much worse on vertical phone footage than on
+   cinema — which would be a real and important finding about the app's input.
+
+Both predict the same numbers. Only human labels tell them apart. The seven
+human-labelled frames cannot help: all seven were drawn from the 25 the author
+flagged as hardest, so they are the worst slice, not a random one.
+
+What the set does show, without depending on which explanation holds: **both
+models agree with each other on only 65.5% of these frames**, against 70.4% on
+film-grab, and **both are wrong on 45 of 139** by the set's own labels. Vertical
+phone footage is harder for everything. How much harder, and for which model,
+is unmeasured.
+
+**The stage 5 decision therefore still rests on film-grab**, where the two are
+tied on human labels. That is the honest position. A human pass over a random
+60–80 frames of this set — not the flagged ones, a random draw — would settle
+it, and would also measure the author bias directly rather than inferring it.
+
+Recorded as a negative result because the methodology is reusable and the trap
+is not obvious: a model-labelled benchmark is fine for comparing models unlike
+its author, and silently broken for comparing one that resembles it.
+
 Also outstanding:
 
 - Qwen3.6-35B-A3B-FP8 has a complete film-grab result (sighted and blind) but

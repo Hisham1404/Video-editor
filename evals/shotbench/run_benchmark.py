@@ -326,7 +326,13 @@ def load_filmshots(data_dir: Path, limit: int | None) -> list["Item"]:
         items.append(Item(
             index=i,
             media_type="image",
-            paths=[rel],
+            # Resolved, not relative. The check above tests `root / rel` --
+            # relative to the TSV -- while every backend resolves a stored path
+            # against the harness's own data dir. Storing `rel` meant the
+            # validation passed against one base and the load failed against
+            # another, and the harness recorded 267 FileNotFoundErrors as 267
+            # wrong answers: a clean 0.0% that is entirely about the path.
+            paths=[str((root / rel).resolve())],
             question="What is the shot scale of this frame?",
             options=options,
             answer=answer,
@@ -372,7 +378,13 @@ def load_reels(tsv: Path, limit: int | None) -> list["Item"]:
         items.append(Item(
             index=i,
             media_type="image",
-            paths=[rel],
+            # Resolved, not relative. The check above tests `root / rel` --
+            # relative to the TSV -- while every backend resolves a stored path
+            # against the harness's own data dir. Storing `rel` meant the
+            # validation passed against one base and the load failed against
+            # another, and the harness recorded 267 FileNotFoundErrors as 267
+            # wrong answers: a clean 0.0% that is entirely about the path.
+            paths=[str((root / rel).resolve())],
             question="What is the shot scale of this frame?",
             options={letters[j]: FILMSHOTS_OPTIONS[k] for j, k in enumerate(order)},
             answer=letters[order.index(gold_name)],
