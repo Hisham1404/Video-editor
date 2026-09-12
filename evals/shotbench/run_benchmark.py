@@ -125,6 +125,23 @@ MODELS: dict[str, ModelSpec] = {
         "qwen3.5-9b", "hf", "Qwen/Qwen3.5-9B",
         "Modern generalist (2026-03). The real test of specialist vs. base progress.", 19.3,
     ),
+    "nv-nemotron-omni": ModelSpec(
+        "nv-nemotron-omni", "nvidia", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+        "Cheapest per image measured: 284 input tokens vs Gemini's 1141 and "
+        "Groq-Qwen's 1303. Omni-modal, and it answered a checkable colour "
+        "question correctly.", 0.0,
+    ),
+    "nv-llama32-11b-vision": ModelSpec(
+        "nv-llama32-11b-vision", "nvidia", "meta/llama-3.2-11b-vision-instruct",
+        "Meta's VLM baseline. Works, but 1623 tokens per image is the most "
+        "expensive of the three hosted options.", 0.0,
+    ),
+    "groq-qwen3.8-27b": ModelSpec(
+        "groq-qwen3.8-27b", "groq", "qwen/qwen3.8-27b",
+        "Open weights, someone else's GPU. Multimodal despite the name -- "
+        "verified by sending an image, not by reading the model card. Free "
+        "tier: 8k tokens/min, 1000 requests/day.", 0.0,
+    ),
     "gemini": ModelSpec(
         "gemini", "gemini", "gemini-3.8-flash",
         "Commercial incumbent. Thinks by default; thinking bills as output.", 0.0,
@@ -658,6 +675,235 @@ class GeminiBackend:
         pass
 
 
+class NvidiaBackend:
+    """NVIDIA NIM, OpenAI-compatible REST.
+
+    A third hosted option for open weights, and the cheapest per image measured
+    so far: nemotron-3-nano-omni bills 284 input tokens against Gemini's 1141
+    and Groq-Qwen's 1303.
+
+    What the catalogue says and what a key can call are different things.
+    Probing all 82 ids this key lists, with a real image and a question whose
+    answer is checkable ("what colour is this?" on a blue square):
+
+        meta/llama-3.2-11b-vision-instruct       1623 tok  "Blue."
+        nvidia/nemotron-3-nano-omni-30b...        284 tok  "Blue"
+        nvidia/ising-calibration-1.5-31b          282 tok  "Blue"   (quantum charts)
+        four more accepted the payload and returned an empty string
+        55 returned 404, 10 said "not a multimodal model"
+        meta/llama-3.2-90b-vision-instruct timed out at both 45s and 180s
+
+    Accepting an image is not the same as seeing one -- gpt-oss-20b takes the
+    payload here and rejects it on Groq, and answers nothing either way. Only a
+    checkable reply proves vision, which is why the probe asked for a colour.
+
+    NIM uses `max_tokens`, not Groq's `max_completion_tokens`, and its endpoints
+    cold-start: a first call can 503 with ResourceExhausted and succeed on
+    retry, so 503 is treated as retryable rather than fatal.
+    """
+
+    ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions"
+
+    def __init__(self, model_id: str, max_tokens: int = 16):
+        self.key = os.environ.get("NVIDIA_API_KEY", "").strip()
+        if not self.key:
+            sys.exit("NVIDIA_API_KEY not set (put it in evals/shotbench/.env)")
+        self.model_id = model_id
+        self.max_tokens = max_tokens
+        self.in_tokens = 0
+        self.out_tokens = 0
+        self.think_tokens = 0
+        self.truncated = 0
+
+    def generate(self, images: list[Any], prompt: str) -> tuple[str, dict]:
+        import base64
+        import io
+        import urllib.error
+        import urllib.request
+
+        content: list[dict[str, Any]] = []
+        for im in images:
+            buf = io.BytesIO()
+            im.convert("RGB").save(buf, format="JPEG", quality=90)
+            b64 = base64.b64encode(buf.getvalue()).decode()
+            content.append({"type": "image_url",
+                            "image_url": {"url": f"data:image/jpeg;base64,{b64}"}})
+        content.append({"type": "text", "text": prompt})
+
+        payload = {"model": self.model_id, "max_tokens": self.max_tokens,
+                   "temperature": 0,
+                   "messages": [{"role": "user", "content": content}]}
+
+        for attempt in range(6):
+            req = urllib.request.Request(
+                self.ENDPOINT, data=json.dumps(payload).encode(),
+                headers={"Authorization": f"Bearer {self.key}",
+                         "Content-Type": "application/json",
+                         "Accept": "application/json",
+                         "User-Agent": "curl/8.0"})
+            try:
+                data = json.load(urllib.request.urlopen(req, timeout=180))
+                break
+            except urllib.error.HTTPError as exc:
+                body = exc.read().decode("utf-8", "replace")[:200]
+                # 503 here is usually a cold worker, not a real outage.
+                if exc.code in (429, 500, 502, 503, 504) and attempt < 5:
+                    time.sleep(min(2 ** attempt * 3, 60))
+                    continue
+                raise RuntimeError(f"nvidia {exc.code}: {body}") from None
+            except Exception:
+                if attempt < 5:
+                    time.sleep(min(2 ** attempt * 3, 60))
+                    continue
+                raise
+        else:
+            raise RuntimeError("nvidia: retries exhausted")
+
+        usage = data.get("usage", {}) or {}
+        self.in_tokens += usage.get("prompt_tokens", 0)
+        self.out_tokens += usage.get("completion_tokens", 0)
+        choices = data.get("choices") or []
+        text = ((choices[0]["message"].get("content") or "").strip()
+                if choices else "")
+        if not text:
+            self.truncated += 1
+        return text, {"in_tokens": usage.get("prompt_tokens", 0),
+                      "out_tokens": usage.get("completion_tokens", 0)}
+
+    def cost_usd(self) -> float:
+        return 0.0   # free evaluation tier; paid rates not modelled here
+
+    def close(self):
+        pass
+
+
+class GroqBackend:
+    """Groq-hosted open models, OpenAI-compatible REST.
+
+    Worth an arm because it is a third deployment shape: the weights are open
+    like the local models, but someone else pays for the GPU. If an open model
+    served here matches Gemini, the self-hosting break-even calculation
+    (~37,800 reels/month before a dedicated GPU beats an API) never has to be
+    reached at all.
+
+    Two things about this endpoint are not obvious:
+
+    The default urllib User-Agent gets a bare 403. Any normal UA works, so this
+    reads as bot filtering rather than auth -- a key that looks revoked may be
+    fine.
+
+    Multimodality is not in the model name. `qwen/qwen3.8-27b` carries no "VL"
+    and is not documented here as a vision model, but it accepts image_url
+    content and answers correctly; `openai/gpt-oss-120b` and `groq/compound`
+    reject it with "content must be a string". Verified by sending an image, not
+    by reading names.
+
+    Free-tier limits are the real constraint: 8,000 tokens/minute and 1,000
+    requests/day. At ~848 tokens per image that is 9.4 images/minute, so this
+    class paces itself from the x-ratelimit headers rather than sleeping a fixed
+    amount and hoping.
+    """
+
+    ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
+
+    def __init__(self, model_id: str, max_completion_tokens: int = 16):
+        self.key = os.environ.get("GROQ_API_KEY", "").strip()
+        if not self.key:
+            sys.exit("GROQ_API_KEY not set (put it in evals/shotbench/.env)")
+        self.model_id = model_id
+        self.max_completion_tokens = max_completion_tokens
+        self.in_tokens = 0
+        self.out_tokens = 0
+        self.think_tokens = 0
+        self.truncated = 0
+        self._next_ok = 0.0      # epoch seconds before which we must not send
+
+    def generate(self, images: list[Any], prompt: str) -> tuple[str, dict]:
+        import base64
+        import io
+        import urllib.error
+        import urllib.request
+
+        content: list[dict[str, Any]] = []
+        for im in images:
+            buf = io.BytesIO()
+            im.convert("RGB").save(buf, format="JPEG", quality=90)
+            b64 = base64.b64encode(buf.getvalue()).decode()
+            content.append({"type": "image_url",
+                            "image_url": {"url": f"data:image/jpeg;base64,{b64}"}})
+        content.append({"type": "text", "text": prompt})
+
+        payload = {
+            "model": self.model_id,
+            "max_completion_tokens": self.max_completion_tokens,
+            "temperature": 0,
+            "messages": [{"role": "user", "content": content}],
+        }
+
+        for attempt in range(6):
+            wait = self._next_ok - time.time()
+            if wait > 0:
+                time.sleep(wait)
+            req = urllib.request.Request(
+                self.ENDPOINT, data=json.dumps(payload).encode(),
+                headers={"Authorization": f"Bearer {self.key}",
+                         "Content-Type": "application/json",
+                         # A bare urllib UA is 403'd. Not auth -- bot filtering.
+                         "User-Agent": "curl/8.0"})
+            try:
+                resp = urllib.request.urlopen(req, timeout=120)
+                data = json.load(resp)
+                self._pace(dict(resp.headers))
+                break
+            except urllib.error.HTTPError as exc:
+                body = exc.read().decode("utf-8", "replace")[:200]
+                if exc.code == 429 and attempt < 5:
+                    # Prefer the server's own number over a guess.
+                    retry = exc.headers.get("retry-after")
+                    delay = float(retry) if retry and retry.replace(".", "").isdigit() \
+                        else min(2 ** attempt * 5, 70)
+                    time.sleep(delay)
+                    continue
+                if exc.code in (500, 502, 503, 504) and attempt < 5:
+                    time.sleep(min(2 ** attempt * 2, 45))
+                    continue
+                raise RuntimeError(f"groq {exc.code}: {body}") from None
+        else:
+            raise RuntimeError("groq: retries exhausted")
+
+        usage = data.get("usage", {}) or {}
+        self.in_tokens += usage.get("prompt_tokens", 0)
+        self.out_tokens += usage.get("completion_tokens", 0)
+        text = (data["choices"][0]["message"].get("content") or "").strip()
+        if not text:
+            self.truncated += 1
+        return text, {"in_tokens": usage.get("prompt_tokens", 0),
+                      "out_tokens": usage.get("completion_tokens", 0)}
+
+    def _pace(self, headers: dict[str, str]) -> None:
+        """Hold off if the token bucket is nearly empty.
+
+        Sleeping a fixed interval either wastes quota or trips 429s as the image
+        size varies. The remaining-token header is the truth, so spend against it.
+        """
+        try:
+            remaining = float(headers.get("x-ratelimit-remaining-tokens", "1e9"))
+            reset = headers.get("x-ratelimit-reset-tokens", "0s")
+            secs = float(reset.rstrip("s")) if reset.endswith("s") and \
+                reset[:-1].replace(".", "").isdigit() else 0.0
+        except (TypeError, ValueError):
+            return
+        # Below roughly two images' worth, wait for the window to roll over.
+        if remaining < 2000:
+            self._next_ok = time.time() + max(secs, 1.0)
+
+    def cost_usd(self) -> float:
+        return 0.0   # free tier; paid rates differ and are not modelled here
+
+    def close(self):
+        pass
+
+
 def list_gemini_models() -> list[str]:
     import urllib.request
 
@@ -741,6 +987,16 @@ def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
         print(f"  pricing: ${rates['in']}/M in, ${rates['out']}/M out"
               + ("  (introductory - doubles 2027-01-01)"
                  if rates.get("doubles_2027") else ""))
+    elif spec.kind == "nvidia":
+        effective_model_id = spec.model_id
+        print(f"  nvidia NIM: {spec.model_id}")
+        backend = NvidiaBackend(spec.model_id, max_tokens=args.max_new_tokens)
+    elif spec.kind == "groq":
+        effective_model_id = spec.model_id
+        print(f"  groq model: {spec.model_id}  (free tier: 8k tok/min, "
+              f"1000 req/day -- paced from the rate-limit headers)")
+        backend = GroqBackend(spec.model_id,
+                              max_completion_tokens=args.max_new_tokens)
     else:
         preflight_vram(spec)
         effective_model_id = spec.model_id
@@ -805,7 +1061,12 @@ def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
                 print(f"  {n}/{len(todo)}  {rate:.2f} it/s  eta {eta/60:.1f}m"
                       + (f"  errors={errors}" if errors else ""))
 
-    if isinstance(backend, GeminiBackend):
+    if isinstance(backend, (GroqBackend, NvidiaBackend)):
+        print(f"  tokens in={backend.in_tokens} out={backend.out_tokens} "
+              f"cost=$0.0000 (free tier)")
+        if backend.truncated:
+            print(f"  WARNING: {backend.truncated} replies came back empty.")
+    elif isinstance(backend, GeminiBackend):
         share = (100 * backend.think_tokens / backend.out_tokens
                  if backend.out_tokens else 0.0)
         print(f"  tokens in={backend.in_tokens} out={backend.out_tokens} "
