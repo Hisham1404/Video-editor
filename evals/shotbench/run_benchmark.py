@@ -719,7 +719,9 @@ class GeminiBackend:
             try:
                 data = _post_json(url, payload, self.key)
             except urllib.error.HTTPError as exc:
-                body = exc.read().decode("utf-8", "replace")[:200]
+                body = exc.read().decode("utf-8", "replace")[:1200]  # keep the
+                # quota block: 200 chars cut it off before quotaId, and
+                # per-minute vs per-day need opposite responses.
                 last_err = RuntimeError(f"HTTP {exc.code}: {body}")
                 # 503 is common on gemini-3.8-flash under load; 429 is quota.
                 if exc.code in (429, 500, 502, 503, 504) and attempt < 5:
@@ -931,7 +933,9 @@ class NvidiaBackend:
                 data = json.load(urllib.request.urlopen(req, timeout=180))
                 break
             except urllib.error.HTTPError as exc:
-                body = exc.read().decode("utf-8", "replace")[:200]
+                body = exc.read().decode("utf-8", "replace")[:1200]  # keep the
+                # quota block: 200 chars cut it off before quotaId, and
+                # per-minute vs per-day need opposite responses.
                 # 503 here is usually a cold worker, not a real outage.
                 if exc.code in (429, 500, 502, 503, 504) and attempt < 5:
                     time.sleep(min(2 ** attempt * 3, 60))
@@ -1043,7 +1047,9 @@ class GroqBackend:
                 self._pace(dict(resp.headers))
                 break
             except urllib.error.HTTPError as exc:
-                body = exc.read().decode("utf-8", "replace")[:200]
+                body = exc.read().decode("utf-8", "replace")[:1200]  # keep the
+                # quota block: 200 chars cut it off before quotaId, and
+                # per-minute vs per-day need opposite responses.
                 if exc.code == 429:
                     # The daily cap is not survivable by waiting and is not
                     # visible in any header: x-ratelimit-limit-tokens reports
@@ -1158,15 +1164,50 @@ def resolve_gemini_model(preferred: str | None) -> str:
 # --------------------------------------------------------------------------
 
 def completed_indices(path: Path) -> set[int]:
+    """Indices that hold a real answer, and drop the rows that do not.
+
+    AN ERROR ROW IS NOT A COMPLETED ROW. Treating it as one is how
+    Qwen3.6-35B-A3B-FP8 "finished" ShotBench in two seconds: 3,572 rows of
+    `ImportError` from a run that failed before the FP8 kernel was installed,
+    every one of them skipped by the fixed re-run, which then reported a full
+    row count and a 0.0% score. gemini-3.5-flash-lite hit the same trap from the
+    other direction -- 226 HTTP 429s written after its free-tier daily quota ran
+    out, which a re-run tomorrow would have skipped forever.
+
+    Both failures are transient by nature: a missing package gets installed, a
+    quota resets. So the error rows are compacted away here rather than merely
+    ignored, because leaving them in place would put two rows on one index once
+    the retry succeeds, and the report counts rows.
+
+    A permanently failing item costs one retry per run. That is the right price:
+    the alternative is banking the failure silently and scoring it as an answer.
+    """
     done: set[int] = set()
     if not path.exists():
         return done
+
+    kept: list[str] = []
+    dropped = 0
     with path.open(encoding="utf-8") as fh:
         for line in fh:
             try:
-                done.add(json.loads(line)["index"])
+                row = json.loads(line)
             except Exception:
                 continue  # tolerate a torn final line from an eviction
+            if "error" in row:
+                dropped += 1
+                continue
+            if row["index"] in done:
+                continue  # a duplicate from an earlier compaction race
+            done.add(row["index"])
+            kept.append(json.dumps(row))
+
+    if dropped:
+        print(f"  dropping {dropped} error row(s) so they are retried, "
+              f"not counted as done")
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
+        tmp.replace(path)
     return done
 
 
@@ -1276,7 +1317,11 @@ def run_model(spec: ModelSpec, items: list[Item], data_dir: Path,
                 rec = {
                     "index": item.index,
                     "category": item.category,
-                    "error": f"{type(exc).__name__}: {exc}"[:300],
+                    # 300 chars truncated a Gemini 429 right before the part
+                    # that says WHICH quota -- per-minute, which clears in a
+                    # minute, or per-day, which does not. Those need opposite
+                    # responses, and the stored row could not tell them apart.
+                    "error": f"{type(exc).__name__}: {exc}"[:2000],
                     "correct": False,
                     "unparsed": True,
                 }

@@ -223,9 +223,16 @@ Two defects that are real, not harness artifacts:
 - **ShotVL-7B returns an empty string on ~3% of images** (9.9% on film-grab),
   deterministically, images only. More tokens do not fix it.
 - **gemini-3.5-flash-lite cannot finish a run on the free tier.** It stopped
-  dead at item 498 of 859 and every row after it is an HTTP 429. Same wall as
-  Groq, different number. A 3,572-item ShotBench pass is not reachable without
-  billing enabled.
+  dead at item 498 of 859 and every row after it is an HTTP 429. The quota is
+  `GenerateRequestsPerDayPerProjectPerModel-FreeTier`, **500 requests per day
+  per model** — which is exactly where it stopped. It resets at midnight
+  Pacific. Same wall as Groq, counted in requests rather than tokens. A
+  3,572-item ShotBench pass needs eight days of free tier, or billing.
+
+  The stored error could not tell us that: the harness truncated it to 300
+  characters, which cut off the quota id. Per-minute and per-day limits look
+  identical at 300 characters and need opposite responses — wait, or stop.
+  Now captured at 2,000.
 
 ## 8. Cost
 
