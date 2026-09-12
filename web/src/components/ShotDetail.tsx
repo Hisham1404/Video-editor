@@ -110,6 +110,21 @@ function Body({ slot, bpm }: { slot: Slot; bpm: number }) {
           >
             {slot.generation_prompt}
           </p>
+
+          {/* The anchor image. Named, not merely implied: the external video
+              models are image-to-video, and a prompt sent without a start frame
+              comes back with a different face and room than the shots it will
+              be cut against. Always one of the user's own clips. */}
+          {slot.generation_reference_asset && (
+            <p className="caption mt-2" style={{ color: "var(--ink-3)" }}>
+              Start from a frame of{" "}
+              <span style={{ color: "var(--ink-2)" }}>
+                {slot.generation_reference_asset}
+              </span>{" "}
+              so the subject and lighting match the cut before it
+            </p>
+          )}
+
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             <CopyButton text={slot.generation_prompt} />
             <label className="press hov rounded-full px-4 py-2 text-[13px] font-medium" style={{ border: "1px solid var(--line-2)" }}>

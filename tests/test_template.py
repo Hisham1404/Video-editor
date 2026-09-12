@@ -166,6 +166,42 @@ def test_round_trip_preserves_structure(tmp_path):
     assert back.slots[1].shot_size == "close up"
 
 
+def test_gap_carries_both_prompt_and_anchor_image_through_round_trip(tmp_path):
+    """A gap needs two things, and losing either one silently breaks the loop.
+
+    The prompt says what to generate; the anchor says what it should look like.
+    External video models are image-to-video, so a prompt that survives
+    serialisation without its anchor produces a clip with the wrong face and
+    the wrong room -- which only shows up once it is cut against its neighbour.
+    """
+    tpl = make_template()
+    gap = tpl.slots[1]
+    gap.matched_asset = None
+    gap.generation_prompt = "Close-up, single subject, side-lit, 1.2 seconds"
+    gap.generation_reference_asset = "user_clip_07.mp4"
+
+    path = tmp_path / "t.json"
+    tpl.save(path)
+    back = Template.load(path)
+
+    assert back.slots[1].is_gap
+    assert back.slots[1].generation_prompt == gap.generation_prompt
+    assert back.slots[1].generation_reference_asset == "user_clip_07.mp4"
+
+
+def test_anchor_is_absent_on_a_filled_slot(tmp_path):
+    """Only gaps carry an anchor. A filled slot with one means stage 7 ran
+    somewhere it should not have."""
+    tpl = make_template()
+    tpl.slots[0].matched_asset = "user_clip_01.mp4"
+    tpl.slots[0].match_confidence = 0.88
+    path = tmp_path / "t.json"
+    tpl.save(path)
+    back = Template.load(path)
+    assert not back.slots[0].is_gap
+    assert back.slots[0].generation_reference_asset is None
+
+
 def test_saved_json_contains_no_seconds_key(tmp_path):
     path = tmp_path / "t.json"
     make_template().save(path)

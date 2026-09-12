@@ -27,7 +27,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 
 # Keys that would smuggle absolute time into the template. Checked against
 # incoming JSON so a well-meaning future change can't quietly reintroduce them.
@@ -115,7 +115,24 @@ class Slot:
     # Filled by the matching stage.
     matched_asset: str | None = None
     match_confidence: float | None = None
+
+    # Filled by stage 7 when no asset satisfied the slot.
+    #
+    # The prompt says *what to make*. The reference asset says *what it should
+    # look like* -- the external video models are image-to-video, and without an
+    # anchor frame every generated shot arrives with a different face, room and
+    # grade, which reads as broken the moment two of them are cut together.
+    #
+    # This must always be one of the USER's assets, never a frame of the
+    # reference reel. Shipping reference frames to a generation API would put
+    # someone else's copyrighted footage into the output, and it would transfer
+    # content when the entire premise of this project is transferring grammar.
+    #
+    # Pick the neighbouring filled slot's asset rather than the closest match
+    # anywhere in the set: continuity matters most across the cut the generated
+    # clip will actually sit against.
     generation_prompt: str | None = None
+    generation_reference_asset: str | None = None
 
     def __post_init__(self) -> None:
         if self.end.absolute_beats <= self.start.absolute_beats:
@@ -230,6 +247,7 @@ class Template:
                 matched_asset=s.get("matched_asset"),
                 match_confidence=s.get("match_confidence"),
                 generation_prompt=s.get("generation_prompt"),
+                generation_reference_asset=s.get("generation_reference_asset"),
             )
             for s in raw.get("slots", [])
         ]

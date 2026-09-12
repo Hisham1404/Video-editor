@@ -11,7 +11,7 @@
  * in both.
  */
 
-export const SCHEMA_VERSION = "1.0";
+export const SCHEMA_VERSION = "1.1";
 
 export type ShotSize =
   | "extreme wide"
@@ -65,7 +65,21 @@ export interface Slot {
   camera_motion: CameraMotion | null;
   matched_asset: string | null;
   match_confidence: number | null;
+
+  /**
+   * Filled by stage 7 when no asset satisfied the slot.
+   *
+   * The prompt says *what to make*. The reference asset says *what it should
+   * look like* — the external video models are image-to-video, and without an
+   * anchor frame every generated shot comes back with a different face, room
+   * and grade, which reads as broken the moment two are cut together.
+   *
+   * Always one of the USER's assets, never a frame of the reference reel:
+   * that would ship someone else's copyrighted footage to a generation API,
+   * and would transfer content when the premise is transferring grammar.
+   */
   generation_prompt: string | null;
+  generation_reference_asset: string | null;
 }
 
 export interface Template {
@@ -188,6 +202,20 @@ const SEEDS: Seed[] = [
   { cut: 60, size: "wide", framing: "single", desc: "Walking away down the centre of the street", motion: "static", asset: "walk_away.mp4", conf: 0.75 },
 ];
 
+/**
+ * The anchor image for a gap: the nearest filled slot's asset, searching
+ * backwards first.
+ *
+ * Continuity matters most across the cut the generated clip will actually sit
+ * against, so the neighbour beats the closest visual match found anywhere in
+ * the set. Backwards first because a cut inherits from the shot before it.
+ */
+function anchorFor(i: number): string | null {
+  for (let j = i - 1; j >= 0; j--) if (SEEDS[j].asset) return SEEDS[j].asset;
+  for (let j = i + 1; j < SEEDS.length; j++) if (SEEDS[j].asset) return SEEDS[j].asset;
+  return null; // every slot is a gap — nothing of the user's to anchor to
+}
+
 export const MOCK_TEMPLATE: Template = {
   schema_version: SCHEMA_VERSION,
   time_signature: [4, 4],
@@ -206,6 +234,7 @@ export const MOCK_TEMPLATE: Template = {
     matched_asset: s.asset,
     match_confidence: s.conf,
     generation_prompt: s.prompt ?? null,
+    generation_reference_asset: s.asset ? null : anchorFor(i),
   })),
 };
 
