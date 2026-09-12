@@ -148,10 +148,20 @@ MODELS: dict[str, ModelSpec] = {
         "stored knowledge. FP8 because bf16 is 71.9GB and will not fit a 48GB "
         "card -- this build is 37.5GB, which fits with roughly 10GB spare.", 37.5,
     ),
-    # google/gemma-4-31B-it (62.5GB) and gemma-4-26B-A4B-it (51.6GB) are both
-    # too large for a 48GB L40S in bf16. They need an 80GB instance or a
-    # community quantisation; deliberately not listed rather than listed and
-    # failing preflight on the night.
+    # Both Gemma-4 builds need an 80GB card -- bf16 weights alone exceed a 48GB
+    # L40S. Ungated despite Gemma's history, and Gemma4ForConditionalGeneration
+    # is multimodal, so HFBackend loads them with no new code.
+    "gemma-4-31b": ModelSpec(
+        "gemma-4-31b", "hf", "google/gemma-4-31B-it",
+        "The non-Qwen generalist. Every other model here is Qwen-derived, "
+        "including ShotVL's base, so this is the only architecture-independent "
+        "check in the set.", 62.5,
+    ),
+    "gemma-4-26b-a4b": ModelSpec(
+        "gemma-4-26b-a4b", "hf", "google/gemma-4-26B-A4B-it",
+        "Gemma's MoE: ~4B active of 26B. Pairs with qwen3.6-35b-a3b to show "
+        "whether sparse models hold up on this task across two vendors.", 51.6,
+    ),
     "dinov2-shotscale": ModelSpec(
         "dinov2-shotscale", "classifier", "aslakey/shot_scale",
         "Not a VLM: a 1.2GB DINOv2 classification head. Knows 5 classes, not "
