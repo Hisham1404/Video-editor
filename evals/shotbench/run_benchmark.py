@@ -349,7 +349,7 @@ class HFBackend:
     """Local transformers VLM. Uses the unified image-text-to-text API, which
     covers Qwen2.5-VL (ShotVL's base), Qwen3-VL and Qwen3.5."""
 
-    def __init__(self, model_id: str, max_new_tokens: int = 16):
+    def __init__(self, model_id: str, max_new_tokens: int = 128):
         import torch
         from transformers import AutoModelForImageTextToText, AutoProcessor
 
@@ -372,12 +372,22 @@ class HFBackend:
         content.append({"type": "text", "text": prompt})
         messages = [{"role": "user", "content": content}]
 
+        # enable_thinking=False suppresses the chain-of-thought block on models
+        # that have one. Measured on the full test set: Qwen3.5-9B scored 0.0%
+        # across all 3572 items -- not because it cannot see, but because every
+        # answer began "The user wants me to identify the shot size of the
+        # provided image.\n\n1" and was cut off by the token budget before it
+        # ever reached a letter. ShotVL-7B hit the same wall on 110 items.
+        #
+        # Templates that do not define this variable ignore it -- unknown kwargs
+        # land in the Jinja context unused -- so it is safe for every model here.
         inputs = self.processor.apply_chat_template(
             messages,
             add_generation_prompt=True,
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
+            enable_thinking=False,
         )
         inputs = {k: (v.to(self.model.device) if hasattr(v, "to") else v)
                   for k, v in inputs.items()}
@@ -814,8 +824,10 @@ def main() -> None:
     p.add_argument("--skip-video", action="store_true",
                    help="images only; skips the 1.2GB videos.tar download")
     p.add_argument("--video-frames", type=int, default=8)
-    p.add_argument("--max-new-tokens", type=int, default=16,
-                   help="local HF models only; they don't emit thinking tokens")
+    p.add_argument("--max-new-tokens", type=int, default=128,
+                   help="local HF models only. Was 16 on the assumption that "
+                        "local models don't think; Qwen3.5-9B does, and scored "
+                        "0.0%% on all 3572 items because of it")
     p.add_argument("--max-output-tokens", type=int, default=512,
                    help="Gemini only. Must leave room for thinking: at 16 the "
                         "reply comes back empty and every item scores 0.")
