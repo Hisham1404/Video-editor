@@ -809,7 +809,26 @@ class ClassifierBackend:
 
         self.torch = torch
         print(f"  loading classifier {model_id} ...")
-        self.processor = AutoImageProcessor.from_pretrained(model_id)
+        try:
+            self.processor = AutoImageProcessor.from_pretrained(model_id)
+        except OSError:
+            # aslakey/shot_scale ships config.json and model.safetensors but no
+            # preprocessor_config.json, so there is no record of the image size
+            # or normalisation it was trained with.
+            #
+            # Falling back to the base checkpoint's processor is a reasonable
+            # bet -- fine-tunes almost always keep their base preprocessing, and
+            # DINOv2's is standard 224px with ImageNet statistics. But it IS a
+            # bet, and a wrong one degrades accuracy silently rather than
+            # raising. So it is announced loudly here, and a poor score from
+            # this model must be read as "possibly mis-preprocessed" rather than
+            # "the architecture does not work".
+            fallback = "facebook/dinov2-with-registers-base"
+            print(f"  WARNING: {model_id} has no preprocessor_config.json.")
+            print(f"  Falling back to {fallback} preprocessing (224px, ImageNet "
+                  f"norm). If this model scores poorly, suspect this before the "
+                  f"architecture.")
+            self.processor = AutoImageProcessor.from_pretrained(fallback)
         self.model = AutoModelForImageClassification.from_pretrained(model_id)
         self.model.eval()
         if torch.cuda.is_available():
