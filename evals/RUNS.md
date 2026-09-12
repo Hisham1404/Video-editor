@@ -27,7 +27,7 @@ ShotVL-3B's 66.8% against a published 65.1% is what certifies the harness.
 | Model | Dataset | Where | Notes |
 |---|---|---|---|
 | gemini-3.5-flash-lite | film-grab | laptop, pid 30732 | ~2s/item |
-| groq qwen3.8-27b | film-grab | laptop, queue_groq.sh | ~21s/item, free tier paced |
+| ~~groq qwen3.8-27b~~ | film-grab | **ABANDONED at 66/859** | free tier caps at 200k tokens/day; this run needs 1.78M |
 | nv-nemotron-omni | film-grab | laptop | reasons internally; ~280 out tok/item |
 | nv-llama32-11b-vision | film-grab | laptop | 1623 in tok/item, the priciest |
 
@@ -82,6 +82,21 @@ config.json — a bare .bin with no id2label, so its outputs cannot be
 interpreted. Dropped.
 
 ---
+
+## Groq: why it stopped at 66 items
+
+Groq's free tier caps at **200,000 tokens per day**. This benchmark needs 859
+images x ~2073 tokens = **1.78 million** — nine days of running.
+
+The trap is that the cap is invisible. The API publishes only per-minute
+limits: `x-ratelimit-limit-tokens: 8000` reads *full* even while the day is
+exhausted, because that header describes the minute bucket. Only the 429 body
+names TPD. Pacing code written against the headers — which is what I wrote —
+cannot see this coming, and retries into a five-minute backoff forever.
+
+The harness now parses TPD out of the 429 body and aborts with a clear message
+instead. The partial result stands at **53.0% on n=66**: same band as everything
+else, far too small to rank.
 
 ## Standing caveats
 

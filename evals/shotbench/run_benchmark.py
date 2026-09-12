@@ -984,6 +984,7 @@ class GroqBackend:
         self.think_tokens = 0
         self.truncated = 0
         self._next_ok = 0.0      # epoch seconds before which we must not send
+        self._last_cost = 1500.0  # observed tokens per request, for pacing
 
     def generate(self, images: list[Any], prompt: str) -> tuple[str, dict]:
         import base64
@@ -1024,13 +1025,25 @@ class GroqBackend:
                 break
             except urllib.error.HTTPError as exc:
                 body = exc.read().decode("utf-8", "replace")[:200]
-                if exc.code == 429 and attempt < 5:
-                    # Prefer the server's own number over a guess.
-                    retry = exc.headers.get("retry-after")
-                    delay = float(retry) if retry and retry.replace(".", "").isdigit() \
-                        else min(2 ** attempt * 5, 70)
-                    time.sleep(delay)
-                    continue
+                if exc.code == 429:
+                    # The daily cap is not survivable by waiting and is not
+                    # visible in any header: x-ratelimit-limit-tokens reports
+                    # the per-MINUTE bucket (8000), which reads full even while
+                    # the day is exhausted. Only the 429 body names TPD, so it
+                    # has to be parsed out or the run retries into a wall for
+                    # hours. Measured: 859 images x ~2073 tokens = 1.78M against
+                    # a 200k/day free-tier cap, which is nine days of running.
+                    if "per day" in body or "TPD" in body:
+                        raise RuntimeError(
+                            "groq daily token cap reached -- waiting cannot fix "
+                            f"this, the quota resets tomorrow.\n  {body}") from None
+                    if attempt < 5:
+                        # Prefer the server's own number over a guess.
+                        retry = exc.headers.get("retry-after")
+                        delay = float(retry) if retry and retry.replace(".", "").isdigit() \
+                            else min(2 ** attempt * 5, 70)
+                        time.sleep(delay)
+                        continue
                 if exc.code in (500, 502, 503, 504) and attempt < 5:
                     time.sleep(min(2 ** attempt * 2, 45))
                     continue
@@ -1041,6 +1054,10 @@ class GroqBackend:
         usage = data.get("usage", {}) or {}
         self.in_tokens += usage.get("prompt_tokens", 0)
         self.out_tokens += usage.get("completion_tokens", 0)
+        # Pace against what this request actually cost, not a guess: image token
+        # counts vary with resolution.
+        self._last_cost = float(usage.get("total_tokens")
+                                or usage.get("prompt_tokens", 0) or 1500)
         text = (data["choices"][0]["message"].get("content") or "").strip()
         if not text:
             self.truncated += 1
@@ -1048,21 +1065,34 @@ class GroqBackend:
                       "out_tokens": usage.get("completion_tokens", 0)}
 
     def _pace(self, headers: dict[str, str]) -> None:
-        """Hold off if the token bucket is nearly empty.
+        """Wait only as long as it takes to refill enough tokens for one image.
 
-        Sleeping a fixed interval either wastes quota or trips 429s as the image
-        size varies. The remaining-token header is the truth, so spend against it.
+        The first version waited for a full window reset whenever the bucket
+        dropped below two images' worth. That measured 51s per item and
+        projected 12 hours for 859 images.
+
+        It was wrong about how the limit works. Groq's bucket refills
+        continuously at limit/60 tokens per second, not in discrete windows, so
+        after a 1303-token image only ~10s of refill is needed -- roughly a
+        fifth of what the old code slept. Sleep for the shortfall, not the
+        window.
+
+        A small safety margin is added because image token counts vary with
+        resolution, and undershooting costs a 429 and its much longer backoff.
         """
         try:
             remaining = float(headers.get("x-ratelimit-remaining-tokens", "1e9"))
-            reset = headers.get("x-ratelimit-reset-tokens", "0s")
-            secs = float(reset.rstrip("s")) if reset.endswith("s") and \
-                reset[:-1].replace(".", "").isdigit() else 0.0
+            limit = float(headers.get("x-ratelimit-limit-tokens", "8000"))
         except (TypeError, ValueError):
             return
-        # Below roughly two images' worth, wait for the window to roll over.
-        if remaining < 2000:
-            self._next_ok = time.time() + max(secs, 1.0)
+
+        need = max(self._last_cost * 1.15, 1500.0)   # 15% headroom
+        if remaining >= need:
+            return
+        refill_per_sec = limit / 60.0
+        if refill_per_sec <= 0:
+            return
+        self._next_ok = time.time() + (need - remaining) / refill_per_sec
 
     def cost_usd(self) -> float:
         return 0.0   # free tier; paid rates differ and are not modelled here
