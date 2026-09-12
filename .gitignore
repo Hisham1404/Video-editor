@@ -9,7 +9,12 @@ media/
 *.mov
 *.wav
 *.mp3
-evals/shotbench/results/
+# Benchmark measurements are the deliverable, so results are versioned. The
+# directory cannot be excluded outright or git never descends far enough to see
+# evals/shotbench/.gitignore, which re-includes only .jsonl — the rule that
+# stops a stray .env or a downloaded weight riding along in a bulk `git add`.
+evals/shotbench/results/*
+!evals/shotbench/results/*.jsonl
 evals/shotbench/shotbench_data/
 
 # Golden fixtures are append-only but their media is large; track with LFS or

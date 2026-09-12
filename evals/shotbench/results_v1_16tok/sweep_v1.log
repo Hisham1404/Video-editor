@@ -1,0 +1,644 @@
+START 2026-09-12T10:02:16Z
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Preparing ShotBench ...
+  3572 items
+
+=== shotvl-3b ===
+  Cinematic specialist, 3.75B. Published ShotBench avg 65.1.
+  resuming: 20 done, 3552 remaining
+  gpu: NVIDIA L40S (44.4 GB)
+  loading Vchitect/ShotVL-3B ...
+Loading weights:   0%|          | 0/824 [00:00<?, ?it/s]Loading weights:   4%|▎         | 29/824 [00:00<00:02, 282.71it/s]Loading weights:  11%|█         | 87/824 [00:00<00:01, 447.31it/s]Loading weights:  17%|█▋        | 137/824 [00:00<00:01, 461.91it/s]Loading weights:  23%|██▎       | 189/824 [00:00<00:01, 483.36it/s]Loading weights:  29%|██▉       | 243/824 [00:00<00:01, 489.05it/s]Loading weights:  36%|███▌      | 293/824 [00:00<00:01, 491.44it/s]Loading weights:  43%|████▎     | 351/824 [00:00<00:00, 517.48it/s]Loading weights:  49%|████▉     | 403/824 [00:00<00:00, 506.98it/s]Loading weights:  64%|██████▍   | 526/824 [00:00<00:00, 725.37it/s]Loading weights:  87%|████████▋ | 714/824 [00:01<00:00, 1072.50it/s]Loading weights: 100%|██████████| 824/824 [00:01<00:00, 749.43it/s] 
+  25/3552  2.27 it/s  eta 25.9m
+  50/3552  2.39 it/s  eta 24.4m
+  75/3552  2.29 it/s  eta 25.3m
+  100/3552  2.34 it/s  eta 24.6m
+  125/3552  2.39 it/s  eta 23.9m
+  150/3552  2.40 it/s  eta 23.6m
+  175/3552  2.43 it/s  eta 23.1m
+  200/3552  2.44 it/s  eta 22.9m
+  225/3552  2.47 it/s  eta 22.5m
+  250/3552  2.48 it/s  eta 22.2m
+  275/3552  2.49 it/s  eta 21.9m
+  300/3552  2.49 it/s  eta 21.7m
+  325/3552  2.49 it/s  eta 21.6m
+  350/3552  2.49 it/s  eta 21.4m
+  375/3552  2.50 it/s  eta 21.2m
+  400/3552  2.50 it/s  eta 21.0m
+  425/3552  2.51 it/s  eta 20.8m
+  450/3552  2.52 it/s  eta 20.5m
+  475/3552  2.52 it/s  eta 20.4m
+  500/3552  2.52 it/s  eta 20.2m
+  525/3552  2.51 it/s  eta 20.1m
+  550/3552  2.52 it/s  eta 19.8m
+  575/3552  2.52 it/s  eta 19.7m
+  600/3552  2.51 it/s  eta 19.6m
+  625/3552  2.52 it/s  eta 19.3m
+  650/3552  2.53 it/s  eta 19.1m
+  675/3552  2.53 it/s  eta 18.9m
+  700/3552  2.52 it/s  eta 18.9m
+  725/3552  2.53 it/s  eta 18.6m
+  750/3552  2.52 it/s  eta 18.5m
+  775/3552  2.53 it/s  eta 18.3m
+  800/3552  2.53 it/s  eta 18.1m
+  825/3552  2.53 it/s  eta 18.0m
+  850/3552  2.53 it/s  eta 17.8m
+  875/3552  2.52 it/s  eta 17.7m
+  900/3552  2.52 it/s  eta 17.5m
+  925/3552  2.51 it/s  eta 17.4m
+  950/3552  2.51 it/s  eta 17.3m
+  975/3552  2.51 it/s  eta 17.1m
+  1000/3552  2.51 it/s  eta 17.0m
+  1025/3552  2.51 it/s  eta 16.8m
+  1050/3552  2.51 it/s  eta 16.6m
+  1075/3552  2.51 it/s  eta 16.5m
+  1100/3552  2.51 it/s  eta 16.3m
+  1125/3552  2.51 it/s  eta 16.1m
+  1150/3552  2.50 it/s  eta 16.0m
+  1175/3552  2.50 it/s  eta 15.8m
+  1200/3552  2.50 it/s  eta 15.7m
+  1225/3552  2.50 it/s  eta 15.5m
+  1250/3552  2.50 it/s  eta 15.3m
+  1275/3552  2.51 it/s  eta 15.1m
+  1300/3552  2.51 it/s  eta 15.0m
+  1325/3552  2.51 it/s  eta 14.8m
+  1350/3552  2.51 it/s  eta 14.6m
+  1375/3552  2.52 it/s  eta 14.4m
+  1400/3552  2.52 it/s  eta 14.2m
+  1425/3552  2.52 it/s  eta 14.1m
+  1450/3552  2.52 it/s  eta 13.9m
+  1475/3552  2.52 it/s  eta 13.7m
+  1500/3552  2.52 it/s  eta 13.6m
+  1525/3552  2.52 it/s  eta 13.4m
+  1550/3552  2.52 it/s  eta 13.2m
+  1575/3552  2.52 it/s  eta 13.1m
+  1600/3552  2.51 it/s  eta 12.9m
+  1625/3552  2.52 it/s  eta 12.8m
+  1650/3552  2.52 it/s  eta 12.6m
+  1675/3552  2.52 it/s  eta 12.4m
+  1700/3552  2.52 it/s  eta 12.2m
+  1725/3552  2.52 it/s  eta 12.1m
+  1750/3552  2.52 it/s  eta 11.9m
+  1775/3552  2.52 it/s  eta 11.8m
+  1800/3552  2.52 it/s  eta 11.6m
+  1825/3552  2.52 it/s  eta 11.4m
+  1850/3552  2.51 it/s  eta 11.3m
+  1875/3552  2.51 it/s  eta 11.1m
+  1900/3552  2.51 it/s  eta 11.0m
+  1925/3552  2.51 it/s  eta 10.8m
+  1950/3552  2.51 it/s  eta 10.6m
+  1975/3552  2.51 it/s  eta 10.5m
+  2000/3552  2.51 it/s  eta 10.3m
+  2025/3552  2.51 it/s  eta 10.1m
+  2050/3552  2.52 it/s  eta 9.9m
+  2075/3552  2.52 it/s  eta 9.8m
+  2100/3552  2.52 it/s  eta 9.6m
+  2125/3552  2.53 it/s  eta 9.4m
+  2150/3552  2.52 it/s  eta 9.3m
+  2175/3552  2.52 it/s  eta 9.1m
+  2200/3552  2.53 it/s  eta 8.9m
+  2225/3552  2.53 it/s  eta 8.7m
+  2250/3552  2.53 it/s  eta 8.6m
+  2275/3552  2.53 it/s  eta 8.4m
+  2300/3552  2.53 it/s  eta 8.2m
+  2325/3552  2.53 it/s  eta 8.1m
+  2350/3552  2.54 it/s  eta 7.9m
+  2375/3552  2.53 it/s  eta 7.7m
+  2400/3552  2.53 it/s  eta 7.6m
+  2425/3552  2.54 it/s  eta 7.4m
+  2450/3552  2.54 it/s  eta 7.2m
+  2475/3552  2.54 it/s  eta 7.1m
+  2500/3552  2.54 it/s  eta 6.9m
+  2525/3552  2.54 it/s  eta 6.7m
+  2550/3552  2.54 it/s  eta 6.6m
+  2575/3552  2.54 it/s  eta 6.4m
+  2600/3552  2.54 it/s  eta 6.3m
+  2625/3552  2.53 it/s  eta 6.1m
+  2650/3552  2.53 it/s  eta 5.9m
+  2675/3552  2.54 it/s  eta 5.8m
+  2700/3552  2.53 it/s  eta 5.6m
+  2725/3552  2.53 it/s  eta 5.4m
+  2750/3552  2.53 it/s  eta 5.3m
+  2775/3552  2.53 it/s  eta 5.1m
+  2800/3552  2.53 it/s  eta 5.0m
+  2825/3552  2.53 it/s  eta 4.8m
+  2850/3552  2.53 it/s  eta 4.6m
+  2875/3552  2.53 it/s  eta 4.5m
+  2900/3552  2.53 it/s  eta 4.3m
+  2925/3552  2.53 it/s  eta 4.1m
+  2950/3552  2.53 it/s  eta 4.0m
+  2975/3552  2.53 it/s  eta 3.8m
+  3000/3552  2.53 it/s  eta 3.6m
+  3025/3552  2.53 it/s  eta 3.5m
+  3050/3552  2.53 it/s  eta 3.3m
+  3075/3552  2.54 it/s  eta 3.1m
+  3100/3552  2.48 it/s  eta 3.0m
+  3125/3552  2.38 it/s  eta 3.0m
+  3150/3552  2.29 it/s  eta 2.9m
+  3175/3552  2.20 it/s  eta 2.9m
+  3200/3552  2.12 it/s  eta 2.8m
+  3225/3552  2.05 it/s  eta 2.7m
+  3250/3552  1.98 it/s  eta 2.5m
+  3275/3552  1.91 it/s  eta 2.4m
+  3300/3552  1.85 it/s  eta 2.3m
+  3325/3552  1.79 it/s  eta 2.1m
+  3350/3552  1.74 it/s  eta 1.9m
+  3375/3552  1.70 it/s  eta 1.7m
+  3400/3552  1.65 it/s  eta 1.5m
+  3425/3552  1.61 it/s  eta 1.3m
+  3450/3552  1.58 it/s  eta 1.1m
+  3475/3552  1.54 it/s  eta 0.8m
+  3500/3552  1.51 it/s  eta 0.6m
+  3525/3552  1.48 it/s  eta 0.3m
+  3550/3552  1.45 it/s  eta 0.0m
+  3552/3552  1.44 it/s  eta 0.0m
+
+=== shotvl-7b ===
+  Cinematic specialist, 8.29B. Published ShotBench avg 70.1.
+  gpu: NVIDIA L40S (44.4 GB)
+  loading Vchitect/ShotVL-7B ...
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files:  25%|██▌       | 1/4 [00:15<00:45, 15.21s/it]Fetching 4 files:  50%|█████     | 2/4 [00:27<00:26, 13.22s/it]Fetching 4 files:  75%|███████▌  | 3/4 [00:27<00:07,  7.28s/it]Fetching 4 files: 100%|██████████| 4/4 [00:31<00:00,  6.20s/it]Fetching 4 files: 100%|██████████| 4/4 [00:31<00:00,  7.95s/it]
+Loading weights:   0%|          | 0/729 [00:00<?, ?it/s]Loading weights:   0%|          | 2/729 [00:00<01:26,  8.39it/s]Loading weights:   2%|▏         | 18/729 [00:00<00:11, 60.82it/s]Loading weights:   6%|▌         | 41/729 [00:00<00:05, 115.10it/s]Loading weights:   9%|▉         | 65/729 [00:00<00:04, 149.79it/s]Loading weights:  12%|█▏        | 88/729 [00:00<00:03, 165.08it/s]Loading weights:  16%|█▌        | 113/729 [00:00<00:03, 178.78it/s]Loading weights:  19%|█▉        | 137/729 [00:00<00:03, 185.92it/s]Loading weights:  22%|██▏       | 160/729 [00:01<00:02, 198.05it/s]Loading weights:  25%|██▍       | 181/729 [00:01<00:02, 195.59it/s]Loading weights:  28%|██▊       | 202/729 [00:01<00:02, 194.62it/s]Loading weights:  30%|███       | 222/729 [00:01<00:02, 186.78it/s]Loading weights:  33%|███▎      | 244/729 [00:01<00:02, 182.71it/s]Loading weights:  37%|███▋      | 270/729 [00:01<00:02, 200.79it/s]Loading weights:  40%|████      | 294/729 [00:01<00:02, 207.32it/s]Loading weights:  44%|████▎     | 318/729 [00:01<00:01, 213.16it/s]Loading weights:  60%|██████    | 439/729 [00:01<00:00, 492.37it/s]Loading weights:  94%|█████████▎| 683/729 [00:02<00:00, 1046.89it/s]Loading weights: 100%|██████████| 729/729 [00:02<00:00, 356.82it/s] 
+  25/3572  1.88 it/s  eta 31.4m
+  50/3572  2.01 it/s  eta 29.2m
+  75/3572  2.03 it/s  eta 28.7m
+  100/3572  1.93 it/s  eta 29.9m
+  125/3572  1.96 it/s  eta 29.4m
+  150/3572  1.99 it/s  eta 28.7m
+  175/3572  1.99 it/s  eta 28.5m
+  200/3572  2.01 it/s  eta 27.9m
+  225/3572  2.01 it/s  eta 27.7m
+  250/3572  2.03 it/s  eta 27.3m
+  275/3572  2.02 it/s  eta 27.2m
+  300/3572  2.02 it/s  eta 27.0m
+  325/3572  2.03 it/s  eta 26.7m
+  350/3572  2.02 it/s  eta 26.6m
+  375/3572  2.02 it/s  eta 26.3m
+  400/3572  2.02 it/s  eta 26.2m
+  425/3572  2.02 it/s  eta 26.0m
+  450/3572  2.03 it/s  eta 25.7m
+  475/3572  2.03 it/s  eta 25.4m
+  500/3572  2.03 it/s  eta 25.3m
+  525/3572  2.03 it/s  eta 25.0m
+  550/3572  2.02 it/s  eta 24.9m
+  575/3572  2.03 it/s  eta 24.6m
+  600/3572  2.02 it/s  eta 24.5m
+  625/3572  2.02 it/s  eta 24.4m
+  650/3572  2.03 it/s  eta 24.0m
+  675/3572  2.03 it/s  eta 23.8m
+  700/3572  2.03 it/s  eta 23.6m
+  725/3572  2.02 it/s  eta 23.5m
+  750/3572  2.02 it/s  eta 23.3m
+  775/3572  2.02 it/s  eta 23.1m
+  800/3572  2.02 it/s  eta 22.9m
+  825/3572  2.02 it/s  eta 22.6m
+  850/3572  2.02 it/s  eta 22.4m
+  875/3572  2.02 it/s  eta 22.2m
+  900/3572  2.01 it/s  eta 22.1m
+  925/3572  2.01 it/s  eta 22.0m
+  950/3572  2.00 it/s  eta 21.8m
+  975/3572  2.00 it/s  eta 21.6m
+  1000/3572  2.00 it/s  eta 21.4m
+  1025/3572  2.00 it/s  eta 21.2m
+  1050/3572  2.01 it/s  eta 20.9m
+  1075/3572  2.00 it/s  eta 20.8m
+  1100/3572  2.00 it/s  eta 20.6m
+  1125/3572  2.00 it/s  eta 20.4m
+  1150/3572  2.00 it/s  eta 20.1m
+  1175/3572  2.00 it/s  eta 20.0m
+  1200/3572  2.00 it/s  eta 19.8m
+  1225/3572  1.99 it/s  eta 19.6m
+  1250/3572  2.00 it/s  eta 19.4m
+  1275/3572  2.00 it/s  eta 19.1m
+  1300/3572  2.00 it/s  eta 18.9m
+  1325/3572  2.00 it/s  eta 18.7m
+  1350/3572  2.00 it/s  eta 18.5m
+  1375/3572  2.01 it/s  eta 18.3m
+  1400/3572  2.01 it/s  eta 18.0m
+  1425/3572  2.01 it/s  eta 17.8m
+  1450/3572  2.01 it/s  eta 17.6m
+  1475/3572  2.01 it/s  eta 17.4m
+  1500/3572  2.01 it/s  eta 17.2m
+  1525/3572  2.01 it/s  eta 17.0m
+  1550/3572  2.01 it/s  eta 16.8m
+  1575/3572  2.01 it/s  eta 16.6m
+  1600/3572  2.01 it/s  eta 16.4m
+  1625/3572  2.01 it/s  eta 16.2m
+  1650/3572  2.01 it/s  eta 16.0m
+  1675/3572  2.01 it/s  eta 15.7m
+  1700/3572  2.01 it/s  eta 15.5m
+  1725/3572  2.01 it/s  eta 15.3m
+  1750/3572  2.01 it/s  eta 15.1m
+  1775/3572  2.01 it/s  eta 14.9m
+  1800/3572  2.01 it/s  eta 14.7m
+  1825/3572  2.01 it/s  eta 14.5m
+  1850/3572  2.00 it/s  eta 14.3m
+  1875/3572  2.00 it/s  eta 14.1m
+  1900/3572  2.00 it/s  eta 13.9m
+  1925/3572  2.00 it/s  eta 13.7m
+  1950/3572  2.00 it/s  eta 13.5m
+  1975/3572  2.00 it/s  eta 13.3m
+  2000/3572  2.00 it/s  eta 13.1m
+  2025/3572  2.00 it/s  eta 12.9m
+  2050/3572  2.00 it/s  eta 12.7m
+  2075/3572  2.01 it/s  eta 12.4m
+  2100/3572  2.01 it/s  eta 12.2m
+  2125/3572  2.01 it/s  eta 12.0m
+  2150/3572  2.01 it/s  eta 11.8m
+  2175/3572  2.01 it/s  eta 11.6m
+  2200/3572  2.01 it/s  eta 11.4m
+  2225/3572  2.01 it/s  eta 11.2m
+  2250/3572  2.01 it/s  eta 10.9m
+  2275/3572  2.01 it/s  eta 10.7m
+  2300/3572  2.02 it/s  eta 10.5m
+  2325/3572  2.02 it/s  eta 10.3m
+  2350/3572  2.02 it/s  eta 10.1m
+  2375/3572  2.02 it/s  eta 9.9m
+  2400/3572  2.02 it/s  eta 9.7m
+  2425/3572  2.02 it/s  eta 9.5m
+  2450/3572  2.02 it/s  eta 9.3m
+  2475/3572  2.02 it/s  eta 9.0m
+  2500/3572  2.02 it/s  eta 8.8m
+  2525/3572  2.02 it/s  eta 8.6m
+  2550/3572  2.02 it/s  eta 8.4m
+  2575/3572  2.02 it/s  eta 8.2m
+  2600/3572  2.02 it/s  eta 8.0m
+  2625/3572  2.02 it/s  eta 7.8m
+  2650/3572  2.02 it/s  eta 7.6m
+  2675/3572  2.02 it/s  eta 7.4m
+  2700/3572  2.02 it/s  eta 7.2m
+  2725/3572  2.02 it/s  eta 7.0m
+  2750/3572  2.02 it/s  eta 6.8m
+  2775/3572  2.02 it/s  eta 6.6m
+  2800/3572  2.02 it/s  eta 6.4m
+  2825/3572  2.02 it/s  eta 6.2m
+  2850/3572  2.02 it/s  eta 6.0m
+  2875/3572  2.02 it/s  eta 5.8m
+  2900/3572  2.01 it/s  eta 5.6m
+  2925/3572  2.02 it/s  eta 5.3m
+  2950/3572  2.02 it/s  eta 5.1m
+  2975/3572  2.02 it/s  eta 4.9m
+  3000/3572  2.02 it/s  eta 4.7m
+  3025/3572  2.02 it/s  eta 4.5m
+  3050/3572  2.02 it/s  eta 4.3m
+  3075/3572  2.02 it/s  eta 4.1m
+  3100/3572  2.02 it/s  eta 3.9m
+  3125/3572  1.96 it/s  eta 3.8m
+  3150/3572  1.89 it/s  eta 3.7m
+  3175/3572  1.82 it/s  eta 3.6m
+  3200/3572  1.75 it/s  eta 3.5m
+  3225/3572  1.70 it/s  eta 3.4m
+  3250/3572  1.64 it/s  eta 3.3m
+  3275/3572  1.58 it/s  eta 3.1m
+  3300/3572  1.53 it/s  eta 3.0m
+  3325/3572  1.49 it/s  eta 2.8m
+  3350/3572  1.44 it/s  eta 2.6m
+  3375/3572  1.40 it/s  eta 2.3m
+  3400/3572  1.37 it/s  eta 2.1m
+  3425/3572  1.33 it/s  eta 1.8m
+  3450/3572  1.30 it/s  eta 1.6m
+  3475/3572  1.27 it/s  eta 1.3m
+  3500/3572  1.24 it/s  eta 1.0m
+  3525/3572  1.22 it/s  eta 0.6m
+  3550/3572  1.19 it/s  eta 0.3m
+  3572/3572  1.17 it/s  eta 0.0m
+
+=== qwen3-vl-8b ===
+  Generalist baseline, the generation after ShotVL's base.
+  gpu: NVIDIA L40S (44.4 GB)
+  loading Qwen/Qwen3-VL-8B-Instruct ...
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files:  25%|██▌       | 1/4 [00:22<01:08, 22.69s/it]Fetching 4 files:  50%|█████     | 2/4 [00:31<00:28, 14.35s/it]Fetching 4 files: 100%|██████████| 4/4 [00:31<00:00,  5.51s/it]Fetching 4 files: 100%|██████████| 4/4 [00:31<00:00,  7.93s/it]
+Loading weights:   0%|          | 0/750 [00:00<?, ?it/s]Loading weights:   0%|          | 1/750 [00:00<01:48,  6.93it/s]Loading weights:   0%|          | 2/750 [00:00<02:16,  5.49it/s]Loading weights:   2%|▏         | 17/750 [00:00<00:15, 48.83it/s]Loading weights:   5%|▌         | 38/750 [00:00<00:07, 94.93it/s]Loading weights:   8%|▊         | 59/750 [00:00<00:05, 124.98it/s]Loading weights:  10%|█         | 76/750 [00:00<00:05, 133.96it/s]Loading weights:  13%|█▎        | 94/750 [00:00<00:04, 140.94it/s]Loading weights:  15%|█▌        | 115/750 [00:01<00:04, 155.55it/s]Loading weights:  18%|█▊        | 136/750 [00:01<00:03, 167.47it/s]Loading weights:  21%|██        | 154/750 [00:01<00:03, 170.45it/s]Loading weights:  23%|██▎       | 172/750 [00:01<00:03, 164.96it/s]Loading weights:  26%|██▌       | 192/750 [00:01<00:03, 169.23it/s]Loading weights:  28%|██▊       | 213/750 [00:01<00:03, 176.70it/s]Loading weights:  31%|███       | 231/750 [00:01<00:02, 176.41it/s]Loading weights:  33%|███▎      | 249/750 [00:01<00:03, 165.54it/s]Loading weights:  36%|███▌      | 269/750 [00:01<00:02, 170.41it/s]Loading weights:  39%|███▊      | 290/750 [00:02<00:02, 176.87it/s]Loading weights:  41%|████      | 308/750 [00:02<00:02, 177.33it/s]Loading weights:  43%|████▎     | 326/750 [00:02<00:02, 169.77it/s]Loading weights:  46%|████▌     | 346/750 [00:02<00:02, 174.82it/s]Loading weights:  49%|████▉     | 366/750 [00:02<00:02, 177.89it/s]Loading weights:  51%|█████     | 384/750 [00:02<00:02, 174.35it/s]Loading weights:  62%|██████▏   | 467/750 [00:02<00:00, 358.41it/s]Loading weights:  92%|█████████▏| 688/750 [00:02<00:00, 886.13it/s]Loading weights: 100%|██████████| 750/750 [00:02<00:00, 264.99it/s]
+  25/3572  2.14 it/s  eta 27.6m
+  50/3572  2.27 it/s  eta 25.8m
+  75/3572  2.30 it/s  eta 25.3m
+  100/3572  2.21 it/s  eta 26.2m
+  125/3572  2.24 it/s  eta 25.6m
+  150/3572  2.28 it/s  eta 25.0m
+  175/3572  2.29 it/s  eta 24.7m
+  200/3572  2.31 it/s  eta 24.4m
+  225/3572  2.31 it/s  eta 24.1m
+  250/3572  2.33 it/s  eta 23.7m
+  275/3572  2.33 it/s  eta 23.6m
+  300/3572  2.33 it/s  eta 23.4m
+  325/3572  2.34 it/s  eta 23.2m
+  350/3572  2.33 it/s  eta 23.0m
+  375/3572  2.33 it/s  eta 22.8m
+  400/3572  2.33 it/s  eta 22.7m
+  425/3572  2.33 it/s  eta 22.5m
+  450/3572  2.34 it/s  eta 22.3m
+  475/3572  2.35 it/s  eta 22.0m
+  500/3572  2.34 it/s  eta 21.9m
+  525/3572  2.34 it/s  eta 21.7m
+  550/3572  2.33 it/s  eta 21.6m
+  575/3572  2.34 it/s  eta 21.4m
+  600/3572  2.33 it/s  eta 21.3m
+  625/3572  2.32 it/s  eta 21.2m
+  650/3572  2.33 it/s  eta 20.9m
+  675/3572  2.32 it/s  eta 20.8m
+  700/3572  2.33 it/s  eta 20.6m
+  725/3572  2.31 it/s  eta 20.5m
+  750/3572  2.31 it/s  eta 20.3m
+  775/3572  2.31 it/s  eta 20.2m
+  800/3572  2.31 it/s  eta 20.0m
+  825/3572  2.31 it/s  eta 19.8m
+  850/3572  2.31 it/s  eta 19.6m
+  875/3572  2.31 it/s  eta 19.5m
+  900/3572  2.30 it/s  eta 19.4m
+  925/3572  2.30 it/s  eta 19.2m
+  950/3572  2.29 it/s  eta 19.1m
+  975/3572  2.29 it/s  eta 18.9m
+  1000/3572  2.29 it/s  eta 18.7m
+  1025/3572  2.29 it/s  eta 18.5m
+  1050/3572  2.29 it/s  eta 18.3m
+  1075/3572  2.29 it/s  eta 18.2m
+  1100/3572  2.29 it/s  eta 18.0m
+  1125/3572  2.29 it/s  eta 17.8m
+  1150/3572  2.29 it/s  eta 17.6m
+  1175/3572  2.29 it/s  eta 17.5m
+  1200/3572  2.29 it/s  eta 17.3m
+  1225/3572  2.28 it/s  eta 17.1m
+  1250/3572  2.28 it/s  eta 16.9m
+  1275/3572  2.29 it/s  eta 16.7m
+  1300/3572  2.29 it/s  eta 16.6m
+  1325/3572  2.29 it/s  eta 16.4m
+  1350/3572  2.29 it/s  eta 16.2m
+  1375/3572  2.29 it/s  eta 16.0m
+  1400/3572  2.30 it/s  eta 15.8m
+  1425/3572  2.30 it/s  eta 15.6m
+  1450/3572  2.30 it/s  eta 15.4m
+  1475/3572  2.31 it/s  eta 15.1m
+  1500/3572  2.31 it/s  eta 15.0m
+  1525/3572  2.31 it/s  eta 14.8m
+  1550/3572  2.31 it/s  eta 14.6m
+  1575/3572  2.31 it/s  eta 14.4m
+  1600/3572  2.31 it/s  eta 14.2m
+  1625/3572  2.31 it/s  eta 14.1m
+  1650/3572  2.31 it/s  eta 13.9m
+  1675/3572  2.31 it/s  eta 13.7m
+  1700/3572  2.32 it/s  eta 13.5m
+  1725/3572  2.32 it/s  eta 13.3m
+  1750/3572  2.32 it/s  eta 13.1m
+  1775/3572  2.32 it/s  eta 12.9m
+  1800/3572  2.32 it/s  eta 12.7m
+  1825/3572  2.32 it/s  eta 12.6m
+  1850/3572  2.31 it/s  eta 12.4m
+  1875/3572  2.31 it/s  eta 12.2m
+  1900/3572  2.31 it/s  eta 12.1m
+  1925/3572  2.31 it/s  eta 11.9m
+  1950/3572  2.31 it/s  eta 11.7m
+  1975/3572  2.31 it/s  eta 11.5m
+  2000/3572  2.31 it/s  eta 11.4m
+  2025/3572  2.31 it/s  eta 11.2m
+  2050/3572  2.31 it/s  eta 11.0m
+  2075/3572  2.31 it/s  eta 10.8m
+  2100/3572  2.31 it/s  eta 10.6m
+  2125/3572  2.31 it/s  eta 10.4m
+  2150/3572  2.32 it/s  eta 10.2m
+  2175/3572  2.31 it/s  eta 10.1m
+  2200/3572  2.31 it/s  eta 9.9m
+  2225/3572  2.32 it/s  eta 9.7m
+  2250/3572  2.32 it/s  eta 9.5m
+  2275/3572  2.32 it/s  eta 9.3m
+  2300/3572  2.31 it/s  eta 9.2m
+  2325/3572  2.31 it/s  eta 9.0m
+  2350/3572  2.31 it/s  eta 8.8m
+  2375/3572  2.31 it/s  eta 8.6m
+  2400/3572  2.31 it/s  eta 8.5m
+  2425/3572  2.31 it/s  eta 8.3m
+  2450/3572  2.31 it/s  eta 8.1m
+  2475/3572  2.31 it/s  eta 7.9m
+  2500/3572  2.31 it/s  eta 7.7m
+  2525/3572  2.31 it/s  eta 7.6m
+  2550/3572  2.31 it/s  eta 7.4m
+  2575/3572  2.31 it/s  eta 7.2m
+  2600/3572  2.31 it/s  eta 7.0m
+  2625/3572  2.31 it/s  eta 6.8m
+  2650/3572  2.31 it/s  eta 6.7m
+  2675/3572  2.31 it/s  eta 6.5m
+  2700/3572  2.31 it/s  eta 6.3m
+  2725/3572  2.31 it/s  eta 6.1m
+  2750/3572  2.31 it/s  eta 5.9m
+  2775/3572  2.31 it/s  eta 5.7m
+  2800/3572  2.31 it/s  eta 5.6m
+  2825/3572  2.31 it/s  eta 5.4m
+  2850/3572  2.31 it/s  eta 5.2m
+  2875/3572  2.31 it/s  eta 5.0m
+  2900/3572  2.31 it/s  eta 4.8m
+  2925/3572  2.31 it/s  eta 4.7m
+  2950/3572  2.31 it/s  eta 4.5m
+  2975/3572  2.31 it/s  eta 4.3m
+  3000/3572  2.32 it/s  eta 4.1m
+  3025/3572  2.32 it/s  eta 3.9m
+  3050/3572  2.32 it/s  eta 3.8m
+  3075/3572  2.32 it/s  eta 3.6m
+  3100/3572  2.32 it/s  eta 3.4m
+  3125/3572  2.27 it/s  eta 3.3m
+  3150/3572  2.20 it/s  eta 3.2m
+  3175/3572  2.14 it/s  eta 3.1m
+  3200/3572  2.08 it/s  eta 3.0m
+  3225/3572  2.02 it/s  eta 2.9m
+  3250/3572  1.97 it/s  eta 2.7m
+  3275/3572  1.91 it/s  eta 2.6m
+  3300/3572  1.86 it/s  eta 2.4m
+  3325/3572  1.82 it/s  eta 2.3m
+  3350/3572  1.77 it/s  eta 2.1m
+  3375/3572  1.73 it/s  eta 1.9m
+  3400/3572  1.69 it/s  eta 1.7m
+  3425/3572  1.66 it/s  eta 1.5m
+  3450/3572  1.63 it/s  eta 1.2m
+  3475/3572  1.60 it/s  eta 1.0m
+  3500/3572  1.57 it/s  eta 0.8m
+  3525/3572  1.54 it/s  eta 0.5m
+  3550/3572  1.51 it/s  eta 0.2m
+  3572/3572  1.49 it/s  eta 0.0m
+
+=== qwen3.5-9b ===
+  Modern generalist (2026-03). The real test of specialist vs. base progress.
+  gpu: NVIDIA L40S (44.4 GB)
+  loading Qwen/Qwen3.5-9B ...
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files:  25%|██▌       | 1/4 [00:31<01:34, 31.45s/it]Fetching 4 files:  50%|█████     | 2/4 [00:32<00:27, 13.73s/it]Fetching 4 files:  75%|███████▌  | 3/4 [00:33<00:07,  7.82s/it]Fetching 4 files: 100%|██████████| 4/4 [00:35<00:00,  5.31s/it]Fetching 4 files: 100%|██████████| 4/4 [00:35<00:00,  8.76s/it]
+Loading weights:   0%|          | 0/760 [00:00<?, ?it/s]Loading weights:   0%|          | 1/760 [00:00<03:20,  3.78it/s]Loading weights:   0%|          | 2/760 [00:00<03:50,  3.28it/s]Loading weights:   4%|▎         | 27/760 [00:00<00:13, 55.03it/s]Loading weights:   6%|▌         | 43/760 [00:00<00:09, 77.63it/s]Loading weights:   9%|▊         | 65/760 [00:00<00:06, 109.35it/s]Loading weights:  11%|█         | 82/760 [00:01<00:05, 124.46it/s]Loading weights:  13%|█▎        | 100/760 [00:01<00:04, 138.22it/s]Loading weights:  16%|█▌        | 121/760 [00:01<00:04, 155.20it/s]Loading weights:  19%|█▉        | 147/760 [00:01<00:03, 179.26it/s]Loading weights:  22%|██▏       | 167/760 [00:01<00:03, 176.29it/s]Loading weights:  25%|██▍       | 187/760 [00:01<00:03, 178.58it/s]Loading weights:  27%|██▋       | 206/760 [00:01<00:03, 173.37it/s]Loading weights:  30%|██▉       | 227/760 [00:01<00:02, 180.25it/s]Loading weights:  33%|███▎      | 253/760 [00:01<00:02, 193.52it/s]Loading weights:  36%|███▌      | 273/760 [00:02<00:02, 185.44it/s]Loading weights:  38%|███▊      | 292/760 [00:02<00:02, 171.81it/s]Loading weights:  41%|████      | 312/760 [00:02<00:02, 170.09it/s]Loading weights:  45%|████▍     | 341/760 [00:02<00:02, 195.77it/s]Loading weights:  48%|████▊     | 361/760 [00:02<00:02, 186.42it/s]Loading weights:  51%|█████     | 384/760 [00:02<00:01, 193.55it/s]Loading weights:  53%|█████▎    | 404/760 [00:02<00:01, 188.08it/s]Loading weights:  56%|█████▌    | 423/760 [00:02<00:01, 188.11it/s]Loading weights:  81%|████████  | 613/760 [00:02<00:00, 662.80it/s]Loading weights: 100%|██████████| 760/760 [00:03<00:00, 250.61it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+  25/3572  1.08 it/s  eta 54.6m
+  50/3572  1.13 it/s  eta 51.9m
+  75/3572  1.14 it/s  eta 51.1m
+  100/3572  1.11 it/s  eta 51.9m
+  125/3572  1.12 it/s  eta 51.2m
+  150/3572  1.13 it/s  eta 50.4m
+  175/3572  1.13 it/s  eta 50.0m
+  200/3572  1.14 it/s  eta 49.3m
+  225/3572  1.14 it/s  eta 48.9m
+  250/3572  1.15 it/s  eta 48.3m
+  275/3572  1.15 it/s  eta 47.9m
+  300/3572  1.15 it/s  eta 47.6m
+  325/3572  1.15 it/s  eta 47.2m
+  350/3572  1.15 it/s  eta 46.9m
+  375/3572  1.15 it/s  eta 46.4m
+  400/3572  1.15 it/s  eta 46.1m
+  425/3572  1.15 it/s  eta 45.7m
+  450/3572  1.15 it/s  eta 45.3m
+  475/3572  1.15 it/s  eta 44.8m
+  500/3572  1.15 it/s  eta 44.5m
+  525/3572  1.15 it/s  eta 44.1m
+  550/3572  1.15 it/s  eta 43.8m
+  575/3572  1.15 it/s  eta 43.4m
+  600/3572  1.15 it/s  eta 43.1m
+  625/3572  1.15 it/s  eta 42.8m
+  650/3572  1.15 it/s  eta 42.4m
+  675/3572  1.15 it/s  eta 42.0m
+  700/3572  1.15 it/s  eta 41.6m
+  725/3572  1.15 it/s  eta 41.3m
+  750/3572  1.15 it/s  eta 41.0m
+  775/3572  1.15 it/s  eta 40.6m
+  800/3572  1.15 it/s  eta 40.2m
+  825/3572  1.15 it/s  eta 39.8m
+  850/3572  1.15 it/s  eta 39.5m
+  875/3572  1.15 it/s  eta 39.1m
+  900/3572  1.15 it/s  eta 38.9m
+  925/3572  1.14 it/s  eta 38.5m
+  950/3572  1.14 it/s  eta 38.2m
+  975/3572  1.14 it/s  eta 37.9m
+  1000/3572  1.14 it/s  eta 37.6m
+  1025/3572  1.14 it/s  eta 37.2m
+  1050/3572  1.14 it/s  eta 36.8m
+  1075/3572  1.14 it/s  eta 36.4m
+  1100/3572  1.14 it/s  eta 36.1m
+  1125/3572  1.14 it/s  eta 35.7m
+  1150/3572  1.14 it/s  eta 35.3m
+  1175/3572  1.14 it/s  eta 35.0m
+  1200/3572  1.14 it/s  eta 34.6m
+  1225/3572  1.14 it/s  eta 34.3m
+  1250/3572  1.14 it/s  eta 34.0m
+  1275/3572  1.14 it/s  eta 33.6m
+  1300/3572  1.14 it/s  eta 33.2m
+  1325/3572  1.14 it/s  eta 32.8m
+  1350/3572  1.14 it/s  eta 32.4m
+  1375/3572  1.14 it/s  eta 32.1m
+  1400/3572  1.14 it/s  eta 31.7m
+  1425/3572  1.14 it/s  eta 31.3m
+  1450/3572  1.14 it/s  eta 30.9m
+  1475/3572  1.14 it/s  eta 30.5m
+  1500/3572  1.14 it/s  eta 30.2m
+  1525/3572  1.14 it/s  eta 29.8m
+  1550/3572  1.14 it/s  eta 29.5m
+  1575/3572  1.14 it/s  eta 29.1m
+  1600/3572  1.14 it/s  eta 28.8m
+  1625/3572  1.14 it/s  eta 28.4m
+  1650/3572  1.14 it/s  eta 28.0m
+  1675/3572  1.14 it/s  eta 27.7m
+  1700/3572  1.14 it/s  eta 27.3m
+  1725/3572  1.14 it/s  eta 26.9m
+  1750/3572  1.14 it/s  eta 26.6m
+  1775/3572  1.14 it/s  eta 26.2m
+  1800/3572  1.14 it/s  eta 25.8m
+  1825/3572  1.14 it/s  eta 25.5m
+  1850/3572  1.14 it/s  eta 25.1m
+  1875/3572  1.14 it/s  eta 24.8m
+  1900/3572  1.14 it/s  eta 24.4m
+  1925/3572  1.14 it/s  eta 24.1m
+  1950/3572  1.14 it/s  eta 23.7m
+  1975/3572  1.14 it/s  eta 23.3m
+  2000/3572  1.14 it/s  eta 23.0m
+  2025/3572  1.14 it/s  eta 22.6m
+  2050/3572  1.14 it/s  eta 22.2m
+  2075/3572  1.14 it/s  eta 21.8m
+  2100/3572  1.14 it/s  eta 21.5m
+  2125/3572  1.14 it/s  eta 21.1m
+  2150/3572  1.14 it/s  eta 20.7m
+  2175/3572  1.14 it/s  eta 20.4m
+  2200/3572  1.14 it/s  eta 20.0m
+  2225/3572  1.14 it/s  eta 19.6m
+  2250/3572  1.14 it/s  eta 19.2m
+  2275/3572  1.14 it/s  eta 18.9m
+  2300/3572  1.15 it/s  eta 18.5m
+  2325/3572  1.15 it/s  eta 18.1m
+  2350/3572  1.15 it/s  eta 17.8m
+  2375/3572  1.15 it/s  eta 17.4m
+  2400/3572  1.15 it/s  eta 17.1m
+  2425/3572  1.15 it/s  eta 16.7m
+  2450/3572  1.15 it/s  eta 16.3m
+  2475/3572  1.15 it/s  eta 15.9m
+  2500/3572  1.15 it/s  eta 15.6m
+  2525/3572  1.15 it/s  eta 15.2m
+  2550/3572  1.15 it/s  eta 14.9m
+  2575/3572  1.15 it/s  eta 14.5m
+  2600/3572  1.15 it/s  eta 14.1m
+  2625/3572  1.15 it/s  eta 13.8m
+  2650/3572  1.15 it/s  eta 13.4m
+  2675/3572  1.15 it/s  eta 13.0m
+  2700/3572  1.15 it/s  eta 12.7m
+  2725/3572  1.15 it/s  eta 12.3m
+  2750/3572  1.15 it/s  eta 12.0m
+  2775/3572  1.15 it/s  eta 11.6m
+  2800/3572  1.15 it/s  eta 11.2m
+  2825/3572  1.15 it/s  eta 10.9m
+  2850/3572  1.15 it/s  eta 10.5m
+  2875/3572  1.15 it/s  eta 10.1m
+  2900/3572  1.14 it/s  eta 9.8m
+  2925/3572  1.14 it/s  eta 9.4m
+  2950/3572  1.14 it/s  eta 9.1m
+  2975/3572  1.14 it/s  eta 8.7m
+  3000/3572  1.15 it/s  eta 8.3m
+  3025/3572  1.15 it/s  eta 8.0m
+  3050/3572  1.15 it/s  eta 7.6m
+  3075/3572  1.15 it/s  eta 7.2m
+  3100/3572  1.15 it/s  eta 6.9m
+  3125/3572  1.13 it/s  eta 6.6m
+  3150/3572  1.11 it/s  eta 6.3m
+  3175/3572  1.09 it/s  eta 6.1m
+  3200/3572  1.07 it/s  eta 5.8m
+  3225/3572  1.05 it/s  eta 5.5m
+  3250/3572  1.03 it/s  eta 5.2m
+  3275/3572  1.01 it/s  eta 4.9m
+  3300/3572  1.00 it/s  eta 4.6m
+  3325/3572  0.98 it/s  eta 4.2m
+  3350/3572  0.96 it/s  eta 3.8m
+  3375/3572  0.95 it/s  eta 3.5m
+  3400/3572  0.94 it/s  eta 3.1m
+  3425/3572  0.92 it/s  eta 2.7m
+  3450/3572  0.91 it/s  eta 2.2m
+  3475/3572  0.90 it/s  eta 1.8m
+  3500/3572  0.89 it/s  eta 1.4m
+  3525/3572  0.88 it/s  eta 0.9m
+  3550/3572  0.86 it/s  eta 0.4m
+  3572/3572  0.86 it/s  eta 0.0m
+
+====================================================================================================
+ACCURACY BY DIMENSION (%)
+====================================================================================================
+model           camera angle  camera moveme    composition      lens size       lighting  lighting type   shot framing      shot size    overall       n
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+qwen3-vl-8b            50.1           49.4           50.5           43.4           48.6           58.5           75.7           61.4       54.7    3572
+qwen3.5-9b              0.0            0.0            0.0            0.0            0.0            0.0            0.0            0.0        0.0    3572
+shotvl-3b              68.1           56.2           58.7           60.5           53.4           67.4           86.3           81.2       66.8    3572
+shotvl-7b              72.1           57.3           61.8           60.9           57.4           65.7           84.5           72.2       66.7    3572
+
+====================================================================================================
+DECISION METRIC - shot size + shot framing only
+(the two fields the template depends on; overall average is not the right metric here)
+====================================================================================================
+  shotvl-3b       83.7%   (n=930)
+  shotvl-7b       78.1%   (n=930)
+  qwen3-vl-8b     68.3%   (n=930)
+  qwen3.5-9b       0.0%   (n=930)
+
+====================================================================================================
+OPERATIONS
+====================================================================================================
+model          med latency  unparsed  errors    tok in   tok out  think%    $/item  $/50 imgs
+qwen3-vl-8b          0.41s         0       0         0         0      -     local      local
+qwen3.5-9b           0.86s      3572       0         0         0      -     local      local
+shotvl-3b            0.38s         0       0         0         0      -     local      local
+shotvl-7b            0.48s       110       0         0         0      -     local      local
+
+'$/50 imgs' projects one reference-reel analysis (SPEC assumes 40-60
+images per reference). Thinking tokens bill as output and are included.
+
+Reference - published ShotBench: ShotVL-7B 70.1 | ShotVL-3B 65.1 | GPT-4o 59.3 | Gemini-2.5-flash 54.5
+If shotvl-7b lands near 70.1 overall, the harness is calibrated.
+
+SWEEP_DONE 2026-09-12T13:25:40Z

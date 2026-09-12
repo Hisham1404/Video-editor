@@ -1,8 +1,18 @@
 # Secrets. Never commit an API key.
 .env
 
-# Benchmark artefacts
-results/
+# Dataset cache — large, and re-downloadable from HuggingFace.
 shotbench_data/
+
+# Measurements ARE the deliverable for this project, so results are versioned.
+# Ignore the directory contents by default and re-include only .jsonl, so a
+# stray .env, a downloaded weight or a scratch file inside results/ can never
+# ride along in a bulk `git add`.
+results/*
+!results/*.jsonl
+
+# Pre-parser-fix snapshots. Superseded by the re-scored files; kept locally.
+*.prefix-backup
+
 __pycache__/
 *.pyc
